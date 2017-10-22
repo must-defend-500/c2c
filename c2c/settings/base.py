@@ -27,6 +27,30 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+EMAIL_HOST = 'smtp.sendgrid.com'
+EMAIL_HOST_USER = 'c2c.ai'
+EMAIL_MAIN = 'c2c.ai.holdings@gmail.com'
+    #who you say the email is from
+EMAIL_HOST_PASSWORD = '8a()_b@t'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+"""
+FOR SHELL TESTING:
+
+from django.conf import settings
+from django.core.mail import send_mail
+
+send_mail(
+    "subject", 
+    "here is the message",
+    settings.EMAIL_MAIN, 
+    ["a.c.emory@gmail.com"],
+        #to email list
+    fail_silently=False
+    )
+"""
+
 
 # Application definition
 
@@ -36,8 +60,44 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
+
+    #AllAuth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    #CrispyFOrms
+    'crispy_forms', 
+
+    #'accounts',
+    #'landing_page',
+
+    #organization goes: django apps, 3rd party apps, internal apps
 ]
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+    )
+
+#AllAuth Settings
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 7
+ACCOUNT_EMAIL_REQUIRED=True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+#ACCOUNT_USER_MODEL_USERNAME_FIELD = "email"
+ACCOUNT_USERNAME_REQUIRED = False
+#LOGIN_REDIRECT_URL = "/"
+
+#CrispyForms Settings
+#CRISPY_TEMPLATE_PACK = "bootstrap3"
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,7 +114,7 @@ ROOT_URLCONF = 'c2c.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
