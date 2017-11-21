@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+
+    <h2> {{username}} Account Info </h2>
+
+    <div class = "row">
+      <div class = "col-md-3">
+      <p> Please register your top vendors! </p>
+    <form method="post" action=''>
+      {% csrf_token %}
+      <div>
+      {{ form1 |crispy }}
+    </div>
+    <hr>
+    <div>
+      {{ form2 |crispy }}
+    </div>
+    <hr>
+    <div>
+      {{ form3 |crispy }}
+    </div>
+    <input type="submit" value="Submit">
+    </form>
+  </div>
+</div>
+
+{% endblock content %}

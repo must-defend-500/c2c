@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+
+    <h2> {{username}} Account Info </h2>
+    {{form.errors}}
+    {{ form.non_field_errors }}
+
+    <p> Welcome! </p>
+    <div class = "row">
+      <div class = "col-md-3">
+    <p> Please enter your contact information below: </p>
+    <form method="post" action=''>
+      {% csrf_token %}
+      {{ form|crispy }}
+    <input type="submit" value="Submit">
+    </form>
+  </div>
+</div>
+
+{% endblock content %}
