@@ -17,12 +17,17 @@ from django.conf.urls import url, include
 from django.contrib import admin
 
 from django.contrib.auth.views import LoginView
+from django.views.generic.base import TemplateView
 
 from landing_page.views import HomeView, profile_view
+from files.views import FilePolicyAPI, FileUploadCompleteHandler
 
 urlpatterns = [
+    url(r'^upload/$', TemplateView.as_view(template_name='upload.html'), name='upload-home'),
+    url(r'^api/files/complete/$', FileUploadCompleteHandler.as_view(), name='upload-complete'),
+    url(r'^api/files/policy/$', FilePolicyAPI.as_view(), name='upload-policy'),
     url(r'^admin/', admin.site.urls),
-    url(r'^accounts/profile', profile_view),
+    url(r'^profile', profile_view),
     #url(r'^accounts/profile', ProfileView.as_view()),
     url(r'^$', HomeView.as_view()),
     #url(r'^login/$', LoginView.as_view(), name='login'),

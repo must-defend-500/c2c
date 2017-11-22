@@ -63,6 +63,8 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
+    'rest_framework',
+
     #AllAuth
     'allauth',
     'allauth.account',
@@ -73,6 +75,7 @@ INSTALLED_APPS = [
     #'accounts',
     'landing_page',
     'user_profile',
+    'files'
     #organization goes: django apps, 3rd party apps, internal apps
 ]
 
@@ -93,7 +96,7 @@ ACCOUNT_EMAIL_REQUIRED=True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 #ACCOUNT_USER_MODEL_USERNAME_FIELD = "email"
 ACCOUNT_USERNAME_REQUIRED = False
-LOGIN_REDIRECT_URL = "/accounts/profile"
+LOGIN_REDIRECT_URL = "/profile"
 
 #CrispyForms Settings
 CRISPY_TEMPLATE_PACK = "bootstrap3"

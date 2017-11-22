@@ -100,6 +100,10 @@ def profile_view (request):
 	else:
 		return render(request, "profile.html", {"html_var": True, "username": entry.username})
 
+	#document upload
+	if request.method == "POST" and request.FILES['myfile']:
+		return render(request, "profile.html", {"html_var": True, "username": entry.username})
+
 
 #version1: a class-based view
 
