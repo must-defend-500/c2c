@@ -1,99 +1,19 @@
+  {% extends 'base.html' %}
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
-    <title>User Profile</title>
+    <title>{{username}} Profile</title>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.6.2/fullcalendar.min.js"></script> -->
     <!-- <link rel='stylesheet' href='nicholasmurray/Desktop/Silicon Valley M&M/SoftwareEngineeringWorkshop/c2c-master/templates/account/fullcalendar/fullcalendar.css' /> -->
     <!-- <script src='fullcalendar/fullcalendar.js'></script> -->
     <script type="text/javascript">
-    /*
-    //Prepare form data
-    //var formElement = document.querySelector("form");
-    //document.addEventListener("DOMContentLoaded", sendRequest, false);
-    $(document).ready(function() {
-
-    // page is now ready, initialize the calendar...
-
-    $('#calendar').fullCalendar({
-        // put your options and callbacks here
-        })
-
-    });
-
-    function sendRequest(){
-        var selectedFile = document.getElementById('input').files[0];
-        console.log(selectedFile);
-        var formData = new FormData();
-        formData.append("file", selectedFile); //fileToUpload$ ('input[type=file]')[0].files[0]
-        formData.append("url", "URL-of-Image-or-PDF-file");
-        formData.append("language"   , "eng");
-        formData.append("apikey"  , "122490766b88957");
-        //formData.append("isOverlayRequired", True);
-        //Send OCR Parsing request asynchronously
-        console.log(formData);
-        $.noConflict();
-
-        jQuery.ajax({
-        //$.ajax({
-          url: "https://api.ocr.space/parse/image",
-          data: formData,
-          dataType: 'json',
-          cache: false,
-          contentType: false,
-          processData: false,
-          type: 'POST',
-            success: function (ocrParsedResult) {
-            //Get the parsed results, exit code and error message and details
-            var parsedResults = ocrParsedResult["ParsedResults"];
-            var ocrExitCode = ocrParsedResult["OCRExitCode"];
-            var isErroredOnProcessing = ocrParsedResult["IsErroredOnProcessing"];
-            var errorMessage = ocrParsedResult["ErrorMessage"];
-            var errorDetails = ocrParsedResult["ErrorDetails"];
-            var processingTimeInMilliseconds = ocrParsedResult["ProcessingTimeInMilliseconds"];
-            //If we have got parsed results, then loop over the results to do something
-            if (parsedResults!= null) {
-            //Loop through the parsed results
-            $.each(parsedResults, function (index, value) {
-            var exitCode = value["FileParseExitCode"];
-            var parsedText = value["ParsedText"];
-            var errorMessage = value["ParsedTextFileName"];
-            var errorDetails = value["ErrorDetails"];
-
-            var textOverlay = value["TextOverlay"];
-            var pageText = '';
-            switch (+exitCode) {
-            case 1:
-            pageText = parsedText;
-            break;
-            case 0:
-            case -10:
-            case -20:
-            case -30:
-            case -99:
-            default:
-            pageText += "Error: " + errorMessage;
-            break;
-            }
-              $.each(textOverlay["Lines"], function (index, value) {
-
-                  });
-
-                  });
-                }
-              }
-      });
-
-  }
-}
-  //document.getElementById("demo").innerHTML = txt;
-  */
     </script>
   </head>
 
   <body>
-    {% extends 'base.html' %}
+
 
     {% block content %}
 
@@ -101,12 +21,7 @@
 
     <p> Welcome! </p>
 
-    <p> Add new contract? </p>
-    <form enctype="multipart/form-data" method="post" name="fileinfo">
-      <label>Contract to Upload:</label>
-      <input type="file" id = "input" name="file" onchange="sendRequest()">
-      <!-- <input type="submit" value="Submit!" /> -->
-    </form>
+
 
     <p id="demo"></p>
     <div id='calendar'></div>

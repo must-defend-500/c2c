@@ -1,31 +1,22 @@
+#Upload settings
 AWS_UPLOAD_BUCKET = 'c2c-success'
-
-#'c2c-bucket'
-
- # "c2c-demo"
 
 AWS_UPLOAD_USERNAME = 'c2c_final'
 
-#'c2c-master'
-
-# "c2c_nick"
-
 AWS_UPLOAD_GROUP = 'c2c-success-group'
-
-#'c2c-project-group'
-
-#"c2c-group"
 
 AWS_UPLOAD_REGION = 'us-west-2'
 
 AWS_UPLOAD_ACCESS_KEY_ID = 'AKIAJVX2VDRFFOT6SUIA'
 
-#'AKIAJDXXNTCLP4GO2OKA'
-
-# "AKIAJDJR4CMLGYXO6XCQ"
-
 AWS_UPLOAD_SECRET_KEY = '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'
 
-#'PNvvRPpsfQxXBpwG12HOYbDelUx/UG0EGqSNa9Q6'
+#Download settings
+AWS_STORAGE_BUCKET_NAME = 'c2c-success'
 
-# "cCkRU+nX1SH5YkrxA4GeczK62+G9OJHAa65I0DW2"
+S3DIRECT_REGION =  'us-west-2'
+
+PROTECTED_DIR_NAME = '<your-in-bucket-dir-name>'
+PROTECTED_MEDIA_URL = '//%s.s3.amazonaws.com/%s/' %( AWS_STORAGE_BUCKET_NAME, PROTECTED_DIR_NAME)
+
+AWS_DOWNLOAD_EXPIRE = 5000 #(0ptional, in milliseconds)

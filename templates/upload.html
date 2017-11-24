@@ -87,7 +87,7 @@ function verifyFileIsImagePDF(file){
 function constructFormPolicyData(policyData, fileItem) {
    var contentType = fileItem.type != '' ? fileItem.type : 'application/octet-stream'
     var url = policyData.url
-    console.log(url);
+    //console.log(url);
     var filename = policyData.filename
     var repsonseUser = policyData.user
     // var keyPath = 'www/' + repsonseUser + '/' + filename
@@ -145,6 +145,11 @@ function uploadFile(fileItem){
         // get AWS upload policy for each file uploaded through the POST method
         // Remember we're creating an instance in the backend so using POST is
         // needed.
+
+        var formData = new FormData();
+
+        //first ajax call for the s3 file upload
+
         $.ajax({
             method:"POST",
             data: {
@@ -153,51 +158,108 @@ function uploadFile(fileItem){
             url: "/api/files/policy/",
             success: function(data){
                     policyData = data
+                    formData.append("file", fileItem);
+                    formData.append("url", "URL-of-Image-or-PDF-file");
+                    formData.append("language"   , "eng");
+                    formData.append("apikey"  , '122490766b88957');
+                    formData.append("isOverlayRequired", true);
+                    console.log(data.url);
+                    url_ocr = 'https://api.ocr.space/parse/image';
+
+                    //Send OCR Parsing request asynchronously
+                    jQuery.ajax({
+                      url: url_ocr,
+                      data: formData,
+                      dataType: 'json',
+                      cache: false,
+                      contentType: false,
+                      processData: false,
+                      type: 'POST',
+                      success: function (ocrParsedResult) {
+                      //Get the parsed results, exit code and error message and details
+                        var parsedResults = ocrParsedResult["ParsedResults"];
+                        var ocrExitCode = ocrParsedResult["OCRExitCode"];
+                        var isErroredOnProcessing = ocrParsedResult["IsErroredOnProcessing"];
+                        var errorMessage = ocrParsedResult["ErrorMessage"];
+                        var errorDetails = ocrParsedResult["ErrorDetails"];
+                        var processingTimeInMilliseconds = ocrParsedResult["ProcessingTimeInMilliseconds"];
+
+                        //if there are parsed results
+                        if (parsedResults!= null) {
+                          //loop thru these results
+                          var contract_date, closing_date;
+
+                            $.each(parsedResults, function (index, value) {
+                                var parsedText = value["ParsedText"];
+                                var textOverlay = value["TextOverlay"];
+
+                              $.each(textOverlay["Lines"], function (index, value) {
+                                  if(value.MaxHeight == 10 && value.MinTop==212){
+                                    console.log(value);
+                                    var contract_date = String(value.Words[1].WordText);
+                                    console.log(typeof contract_date);
+                                  }
+                                  });
+                              });
+                          }
+                        else{
+                          alert("Parsed results did not return anything, filesize could be too large");
+                        }
+
+                        //create JSON object to pass to calendar app
+                        var events = {firstDate:contract_date};
+                      }
+                    }).done(function(){
+
+
+                    });
+
             },
             error: function(data){
                 alert("An error occured, please try again later")
             }
         }).done(function(){
-            // construct the needed data using the policy for AWS
-            var fd = constructFormPolicyData(policyData, fileItem)
+          // construct the needed data using the policy for AWS
+          var fd = constructFormPolicyData(policyData, fileItem)
 
-            // use XML http Request to Send to AWS.
-            var xhr = new XMLHttpRequest()
-            // construct callback for when uploading starts
-            xhr.upload.onloadstart = function(event){
-                var inLoadingIndex = $.inArray(fileItem, fileItemList)
-                if (inLoadingIndex == -1){
-                    // Item is not loading, add to inProgress queue
-                    newLoadingItem = {
-                        file: fileItem,
-                        id: policyData.file_id,
-                        order: fileItemList.length + 1
-                    }
-                    fileItemList.push(newLoadingItem)
+          // use XML http Request to Send to AWS.
+          var xhr = new XMLHttpRequest()
+          // construct callback for when uploading starts
+          xhr.upload.onloadstart = function(event){
+              var inLoadingIndex = $.inArray(fileItem, fileItemList)
+              if (inLoadingIndex == -1){
+                  // Item is not loading, add to inProgress queue
+                  newLoadingItem = {
+                      file: fileItem,
+                      id: policyData.file_id,
+                      order: fileItemList.length + 1
                   }
-                  console.log(xhr);
-                fileItem.xhr = xhr
-            }
-
-            // Monitor upload progress and attach to fileItem.
-            xhr.upload.addEventListener("progress", function(event){
-                if (event.lengthComputable) {
-                 var progress = Math.round(event.loaded / event.total * 100);
-                    fileItem.progress = progress
-                    displayItems(fileItemList)
+                  fileItemList.push(newLoadingItem)
                 }
-            })
+                //console.log(xhr);
+              fileItem.xhr = xhr
+          }
 
-            xhr.upload.addEventListener("load", function(event){
-                console.log("Complete")
-                // handle FileItem Upload being complete.
-                fileUploadComplete(fileItem, policyData)
+        //  Monitor upload progress and attach to fileItem.
+          xhr.upload.addEventListener("progress", function(event){
+              if (event.lengthComputable) {
+               var progress = Math.round(event.loaded / event.total * 100);
+                  fileItem.progress = progress
+                  displayItems(fileItemList)
+              }
+          })
 
-            })
+          xhr.upload.addEventListener("load", function(event){
+              console.log("Complete")
+              // handle FileItem Upload being complete.
+              fileUploadComplete(fileItem, policyData)
 
-            xhr.open('POST', policyData.url , true);
-            xhr.send(fd);
+          })
+
+          xhr.open('POST', policyData.url , true);
+          xhr.send(fd);
         })
-}});
+}
+});
 </script>
 {% endblock %}
