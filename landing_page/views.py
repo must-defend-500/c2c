@@ -142,7 +142,6 @@ def profile_view (request):
 			print(event_list)
 			data = {}
 			#write a contract object
-			
 
 
 			return JsonResponse(data)

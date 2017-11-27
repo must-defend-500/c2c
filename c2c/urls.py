@@ -20,12 +20,13 @@ from django.contrib.auth.views import LoginView
 from django.views.generic.base import TemplateView
 
 from landing_page.views import HomeView, profile_view, CalendarView, ContractCreation, test
-from files.views import FilePolicyAPI, FileUploadCompleteHandler
+from files.views import FilePolicyAPI, FileUploadCompleteHandler, ViewFile
 
 urlpatterns = [
-    #need to authorize these properly 
+    #need to authorize these properly
     url(r'^upload/$', TemplateView.as_view(template_name='upload.html'), name='upload-home'),
     url(r'^accounts/calendar/$', CalendarView.as_view()),
+    url(r'^viewfile$', ViewFile.as_view()),
     url(r'^test/$', test.as_view()),
     url(r'^api/files/complete/$', FileUploadCompleteHandler.as_view(), name='upload-complete'),
     url(r'^api/files/policy/$', FilePolicyAPI.as_view(), name='upload-policy'),

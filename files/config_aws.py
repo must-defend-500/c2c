@@ -13,10 +13,13 @@ AWS_UPLOAD_SECRET_KEY = 'j1nzTsf1OvyHprmYbBIUb95iZgRceLyojHlYqose'
 
 #Download settings
 AWS_STORAGE_BUCKET_NAME = 'c2c-success'
+AWS_ACCESS_KEY_ID = 'AKIAJVX2VDRFFOT6SUIA'
+AWS_SECRET_ACCESS_KEY = 'j1nzTsf1OvyHprmYbBIUb95iZgRceLyojHlYqose'
 
 S3DIRECT_REGION =  'us-west-2'
 
-PROTECTED_DIR_NAME = '<your-in-bucket-dir-name>'
+#/164/
+PROTECTED_DIR_NAME = 'c2c.ai'
 PROTECTED_MEDIA_URL = '//%s.s3.amazonaws.com/%s/' %( AWS_STORAGE_BUCKET_NAME, PROTECTED_DIR_NAME)
 
 AWS_DOWNLOAD_EXPIRE = 5000 #(0ptional, in milliseconds)
