@@ -142,7 +142,17 @@ def profile_view (request):
 			print(event_list)
 			data = {}
 			#write a contract object
+			#url = contract/164
+			
 
+			# Contract.objects.create(
+			# user =
+			# contract_view =
+			# file_view =
+			# opening_date =
+			# closing_date =
+			# color =
+			# )
 
 			return JsonResponse(data)
 

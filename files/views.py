@@ -162,6 +162,8 @@ class FilePolicyAPI(APIView):
                     file_extension=file_extension
 
                 )
+        print("upload start "+upload_start_path)
+        print("filename_final "+filename_final)
         """
         Eventual file_upload_path includes the renamed file to the
         Django-stored FileItem instance ID. Renaming the file is
@@ -171,6 +173,8 @@ class FilePolicyAPI(APIView):
                                  upload_start_path=upload_start_path,
                                  filename_final=filename_final,
                             )
+        print("final upload path "+final_upload_path)
+
         if filename_req and file_extension:
             """
             Save the eventual path to the Django-stored FileItem instance
@@ -220,5 +224,6 @@ class FilePolicyAPI(APIView):
             "filename": filename_final,
             "url": url,
             "username": username_str,
+            "final_upload_path": final_upload_path
         }
         return Response(data, status=status.HTTP_200_OK)

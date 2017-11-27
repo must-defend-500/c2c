@@ -4,8 +4,6 @@ from django.conf import settings
 
 # Create your models here.
 
-#
-
 class UserInfo(models.Model):
     #change this to settings.AUTH_USER_MODEL.id
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, primary_key=True, on_delete=models.CASCADE)
@@ -59,11 +57,18 @@ class UserPreference(models.Model):
     def __str__(self):
         return str(self.user)
 
-#class Contract(models.Model):
-    #opening_date = models with Date
-    #closng _date = ""
-    #color 
+class Contract(models.Model):
+    # user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserInfo, to_field='user_id', primary_key=True, on_delete=models.CASCADE)
+    #path = models.TextField(blank=True, null=True)
+    contract_view = models.URLField() #/contract/164
+    file_view = models.URLField() #viewing the actual contract /username/164/164.[df]
+    opening_date = models.DateField(auto_now=False, auto_now_add=False)
+    closing_date = models.DateField(auto_now=False, auto_now_add=False)
+    color = models.CharField(max_length = 15)
 
+    def __str__(self):
+        return str(self.contract_view)
 
 #
 # class CalenderEvents(models.Model):
