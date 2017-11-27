@@ -2,12 +2,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.template import RequestContext
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views import View
 from django.views.generic import TemplateView
 from django.forms import ModelForm
 from django.db import models
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import permissions, status, authentication
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .forms import UserInfoForm, UserPreferenceInspector, UserPreferenceLender, UserPreferenceClosing
 from .models import UserInfo, UserPreference
@@ -17,7 +21,38 @@ from .models import UserInfo, UserPreference
 # def home(request):
 # 	return render(request, "landing_page.html", {"html_var": True})
 
+class ContractCreation(APIView):
+	def post(self, request, *args, **kwargs):
+		data = {}
+		return Response(data, status=status.HTTP_200_OK)
 
+class test(View):
+	def post(self, request, *args, **kwargs):
+		print("in test view")
+		data = {"nick": "andrew"}
+		#return Response(data, status=status.HTTP_200_OK)
+		return JsonResponse(data)
+
+class CalendarView(View):
+	def get(self, request, *args, **kwargs):
+		events = [
+			{
+				'title'  : 'opening date',
+				'start'  : '2017-11-24',
+				'color'  : 'green'
+			},
+			# {
+			# 	title  : 'event2',
+			# 	start  : '2010-01-05',
+			# 	end    : '2010-01-07'
+			# },
+			# {
+			# 	title  : 'event3',
+			# 	start  : '2010-01-09T12:30:00',
+			# 	allDay : false
+			# }
+		]
+		return render(request, "calendar.html", {"html_var": True, "events": events})
 #Django Base-View
 class HomeView(View):
 	def get(self, request, *args, **kwargs):
@@ -66,7 +101,7 @@ def profile_view (request):
 				return render(request, "user_preferences.html", {"html_var": True, "form1":form1, "form2":form2, "form3":form3, "username":entry.username})
 			else:
 				print("Form is not valid")
-				print(form.errors)
+				#print(form.errors)
 				return render(request,  "first_login.html", {"form": form, "username": entry.username})
 		elif (request.method == "POST" and UserInfo.objects.filter(user_id = user).exists() and not UserPreference.objects.filter(user=check_user).exists()):
 			form1 = UserPreferenceInspector(request.POST)
@@ -88,7 +123,7 @@ def profile_view (request):
 					closingco2 = form3.cleaned_data.get('closingco2'),
 					closingco3 = form3.cleaned_data.get('closingco3'),
 				)
-				return render(request, "profile.html", {"html_var": True, "username": entry.username})
+				return render(request, "upload.html", {"html_var": True, "username": entry.username})
 			#if form is not valid
 			else:
 				print("Form is not valid")
@@ -97,12 +132,27 @@ def profile_view (request):
 				form3 = UserPreferenceClosing()
 				return render(request, "user_preferences.html", {"html_var": True, "form1":form1, "form2":form2, "form3":form3, "username":entry.username})
 
+	#if new contract is created on homepage
 	else:
-		return render(request, "profile.html", {"html_var": True, "username": entry.username})
+		# NEED TO FIGURE OUT CSRF shit
+		# def post(self, request, *args, **kwargs):
+		if request.method == 'POST':
+			print("in test view")
+			event_list = request.POST.get('data')
+			print(event_list)
+			data = {}
+			#write a contract object
+			
+
+
+			return JsonResponse(data)
+
+
+		return render(request, "upload.html", {"html_var": True, "username": entry.username})
 
 	#document upload
-	if request.method == "POST" and request.FILES['myfile']:
-		return render(request, "profile.html", {"html_var": True, "username": entry.username})
+
+#Pass returned upload information to django backend and create Contract object
 
 
 #version1: a class-based view

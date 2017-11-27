@@ -59,7 +59,11 @@ class UserPreference(models.Model):
     def __str__(self):
         return str(self.user)
 
-# class Contract(models.Model):
-#
+#class Contract(models.Model):
+    #opening_date = models with Date
+    #closng _date = ""
+    #color 
+
+
 #
 # class CalenderEvents(models.Model):

@@ -126,7 +126,6 @@ class FilePolicyAPI(APIView):
 
         policy = base64.b64encode(policy_document_str_encoded)
         signature = base64.b64encode(hmac.new(aws_secret, policy, hashlib.sha1).digest())
-        print(signature)
         data = {
             "policy": policy,
             "signature": signature,

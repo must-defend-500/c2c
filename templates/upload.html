@@ -46,8 +46,6 @@ $(document).ready(function(){
     });
     // end session cookie data setup.
 
-
-
 // declare an empty array for potential uploaded files
 var fileItemList = []
 
@@ -68,7 +66,6 @@ $(document).on('change','.cfeproj-upload-file', function(event){
 })
 
 
-
 function verifyFileIsImagePDF(file){
     // verifies the file extension is one we support.
     var extension = file.name.split('.').pop().toLowerCase(); //file.substr( (file.lastIndexOf('.') +1) );
@@ -87,7 +84,7 @@ function verifyFileIsImagePDF(file){
 function constructFormPolicyData(policyData, fileItem) {
    var contentType = fileItem.type != '' ? fileItem.type : 'application/octet-stream'
     var url = policyData.url
-    //console.log(url);
+    console.log(url);
     var filename = policyData.filename
     var repsonseUser = policyData.user
     // var keyPath = 'www/' + repsonseUser + '/' + filename
@@ -142,11 +139,13 @@ function displayItems(fileItemList){
 function uploadFile(fileItem){
         var policyData;
         var newLoadingItem;
+        var contract_date, closing_date, acceptance_deadline;
         // get AWS upload policy for each file uploaded through the POST method
         // Remember we're creating an instance in the backend so using POST is
         // needed.
 
         var formData = new FormData();
+        var events = {};
 
         //first ajax call for the s3 file upload
 
@@ -187,30 +186,61 @@ function uploadFile(fileItem){
                         //if there are parsed results
                         if (parsedResults!= null) {
                           //loop thru these results
-                          var contract_date, closing_date;
+
 
                             $.each(parsedResults, function (index, value) {
                                 var parsedText = value["ParsedText"];
                                 var textOverlay = value["TextOverlay"];
 
                               $.each(textOverlay["Lines"], function (index, value) {
+                                 //console.log(value);
                                   if(value.MaxHeight == 10 && value.MinTop==212){
-                                    console.log(value);
-                                    var contract_date = String(value.Words[1].WordText);
-                                    console.log(typeof contract_date);
-                                  }
+
+                                    contract_date = String(value.Words[1].WordText);
+
+                                    }
+                                  if(value.MaxHeight == 10 && value.MinTop==524){
+
+                                      closing_date = String(value.Words[0].WordText);
+                                    }
                                   });
                               });
                           }
+
                         else{
                           alert("Parsed results did not return anything, filesize could be too large");
                         }
 
                         //create JSON object to pass to calendar app
-                        var events = {firstDate:contract_date};
+                        events = {'firstDate':contract_date, 'closing_date': closing_date};
                       }
                     }).done(function(){
+                      var json = JSON.stringify(events);
+                      console.log(events);
+                      //pass JSON object back to Django view
+                      jQuery.ajax({
+                                url : "/profile",
+                                type: "POST",
+                                ContentType: 'application/json',
+                                data:
+                                  {'data': json}
+                                ,
+                                  //calltype: 'save',
+                                  // "csrfmiddlewaretoken": '{{ csrf_token }}',
+                                // ,
+                                // handle a successful response
+                                success : function(jsondata) {
+                                  console.log("success");
+                                  console.log(jsondata); // log the returned json to the console
+                                  },
 
+                                  // handle a non-successful response
+                                  error : function(xhr, textStatus, thrownError) {
+                                    console.log(textStatus);
+                                    console.log(thrownError);
+                                    console.warn(xhr.responseText);
+                                  }
+                        });
 
                     });
 

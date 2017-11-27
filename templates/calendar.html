@@ -1,0 +1,20 @@
+{%extends 'base-calendar.html'%}
+
+{% block javascript %}
+<script>
+$(document).ready(function() {
+
+    // page is now ready, initialize the calendar...
+    var event_list = {{events|safe}};
+    console.log(event_list);
+
+    $('#calendar').fullCalendar({
+        // put your options and callbacks here
+        //defaultView: 'basicWeek',
+      events: event_list
+
+    })
+
+});
+</script>
+{% endblock %}
