@@ -10,13 +10,15 @@
 
 <body>
 
-{% include 'snippets/nav.html' %}
 <div class="wrapper">
-  <div class='container'>
+  <!-- <div class='container'> -->
 
-  {% block content_sidebar%} {% endblock content_sidebar %}
-  {% block content %}{% endblock content %}
-  </div>
+  {% block content_sidebar%}
+  {% block content %}
+  {% endblock content %}
+  {% endblock content_sidebar %}
+
+  <!-- </div> -->
 </div>
 
 

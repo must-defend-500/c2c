@@ -9,68 +9,70 @@
 
 {%block content_sidebar%}
 
-<div id="content">
-    <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
-        <i class="glyphicon glyphicon-align-left"></i>
-        Toggle Sidebar
-    </button>
-
-
-</div>
-
-
-        <nav id="sidebar">
+      <nav id="sidebar">
             <!-- Sidebar Header -->
             <div class="sidebar-header">
-                <h3>Collapsible Sidebar</h3>
+                <h3>{{username}}</h3>
             </div>
 
             <!-- Sidebar Links -->
             <ul class="list-unstyled components">
-                <li class="active"><a href="#">Home</a></li>
+                <li class="active"><a href="/">Home</a></li>
                 <li><a href="#">About</a></li>
 
                 <!-- Link with dropdown items -->
-                  <li> <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Pages</a></li>
+                  <li> <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Active Contracts</a></li>
 
                     <ul class="collapse list-unstyled" id="homeSubmenu">
-                        <li><a href="#">Page</a></li>
-                        <li><a href="#">Page</a></li>
-                        <li><a href="#">Page</a></li>
                     </ul>
 
-                <li><a href="#">Portfolio</a></li>
+                <li><a href='/accounts/calendar'>Calendar</a></li>
                 <li><a href="#">Contact</a></li>
+                <li><a href="#">Portfolio</a></li>
+                <li><a href='/accounts/logout'>Logout</a></li>
             </ul>
         </nav>
 
+<div id="content">
 
+<nav class="navbar navbar-inverse">
+    <div class="navbar-header">
+        <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
+            <i class="glyphicon glyphicon-align-left"></i>
+            <span>Toggle</span>
+        </button>
+      </div>
+  </nav>
 
-{%endblock content_sidebar%}
+    {% block content %}
+    <div id='calendar_week'></div>
 
-{% block content %}
-<h2>Hello, {{username}} </h2>
-<div id='calendar_week'></div>
-
-<div class='row'>
-    <div class='col-6 offset-3'>
-        <div class='item-loading-queue'>
-        </div>
-
-          <div>Create New Contract!  </div>
-            <div class="panel-body">
-              <form class='cfeproj-upload-form'>
-                <input class='cfeproj-upload-file form-control' type='file' accept='.pdf/*,image/*' multiple='multiple' />
-              </form>
+    <div class='row'>
+        <div class='col-6 offset-3'>
+            <div class='item-loading-queue'>
             </div>
 
+              <div>Create New Contract!  </div>
+              <input type="button" value="Contract Loaded!" onClick="window.location.reload()" id= "refreshButton">
+                <div class="panel-body">
+                  <form class='cfeproj-upload-form'>
+                    <input class='cfeproj-upload-file form-control' type='file' accept='.pdf/*,image/*' multiple='multiple' />
+                  </form>
+                </div>
+
+        </div>
     </div>
+    {% endblock content %}
+
 </div>
-{% endblock content %}
+
+{%endblock content_sidebar%}
 
 {% block javascript %}
 <script>
 $(document).ready(function(){
+
+  $( "#refreshButton" ).hide();
 
     $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('active');
@@ -85,7 +87,20 @@ $(document).ready(function(){
     height: 200,
     events: event_list
 
-  })
+  });
+
+var contracts_for_sidebar = {{contract_urls|safe}};
+
+for (var key in contracts_for_sidebar) {
+  var counter = 1;
+  $('#homeSubmenu').append(
+      $('<li>').append(
+          $('<a>').attr('href','/'+String(key)).append(
+              $('<span>').attr('class', 'tab').append("Contract "+String(contracts_for_sidebar[key][0])+ ":" + String(contracts_for_sidebar[key][1]))
+              // $('<span>').attr('class', 'tab').attr('style', 'color: '+String(key[0])).append("Contract "+ String(key))
+                // $('<i>').attr('style', 'color: '+String(key[1])).append("Contract "+ String(key))
+  )));
+}
 
 //global variable to set as the view contract url
 var contract_view_url;
@@ -123,6 +138,7 @@ var user_contract;
 
 // declare an empty array for potential uploaded files
 var fileItemList = []
+var array = [];
 
 // auto-upload on file input change.
 $(document).on('change','.cfeproj-upload-file', function(event){
@@ -212,6 +228,10 @@ function displayItems(fileItemList){
     })
 }
 
+function getSecondPart(str) {
+    return str.split(':')[1];
+  }
+
 
 function uploadFile(fileItem){
         var policyData;
@@ -262,14 +282,19 @@ function uploadFile(fileItem){
                         //if there are parsed results
                         if (parsedResults!= null) {
                           //loop thru these results
-
-
                             $.each(parsedResults, function (index, value) {
                                 var parsedText = value["ParsedText"];
                                 var textOverlay = value["TextOverlay"];
 
                               $.each(textOverlay["Lines"], function (index, value) {
-                                 //console.log(value);
+                                if(value.MaxHeight == 10 &&value.MinTop==289){
+                                    var array1 = value.Words;
+                                    for(var i =4; i<array1.length; i++){
+                                      var s = array1[i].WordText;
+                                      array.push(s);
+                                    }
+                                     }
+
                                   if(value.MaxHeight == 10 && value.MinTop==212){
 
                                     contract_date = String(value.Words[1].WordText);
@@ -287,9 +312,18 @@ function uploadFile(fileItem){
                           alert("Parsed results did not return anything, filesize could be too large");
                         }
 
+                        var final_address = "";
+                        var s_1 = getSecondPart(array[0]);
+                        final_address += s_1;
+                        for(var i = 1; i<array.length; i++){
+                          final_address += " ";
+                          final_address += array[i];
+                        }
+                        console.log(final_address);
+
                         //create JSON object to pass to calendar app
                         events = {'firstDate':contract_date, 'closing_date': closing_date,
-                        'contract_view_url':contract_view_url, 'user_contract':user_contract};
+                        'contract_view_url':contract_view_url, 'user_contract':user_contract, 'street': final_address};
                       }
                     }).done(function(){
                       var json = JSON.stringify(events);
@@ -308,7 +342,61 @@ function uploadFile(fileItem){
                                 // handle a successful response
                                 success : function(jsondata) {
                                   console.log("success");
+
+                                  console.log(JSON.parse(jsondata));
+                                  var arrays = JSON.parse(jsondata);
                                     alert("Your contract has been uploaded");
+                                    //$( "#refreshButton" ).show();
+                                    //re-do the fullCalendar and sidebar
+
+                                    //clear homeSubmenu
+                                    $('#homeSubmenu').empty();
+                                    // $('#calendar_week').empty();
+
+                                    var new_events = [];
+
+                                    //for (var key in arrays) {
+                                    for(var i = 0; i< arrays.length; i++){
+
+                                      contractdate = {
+                                        'title': "Contract "+ String(arrays[i].street) + ": "+ "Contract Date",
+                                        'start': String(arrays[i].opening_date),
+                                        'color': String(arrays[i].color),
+                                      }
+                                      new_events.push(contractdate)
+                                      closingdate = {
+                                          'title': "Contract "+ String(arrays[i].street) + ": "+ "Closing Date",
+                                          'start': String(arrays[i].opening_date),
+                                          'color': String(arrays[i].color),
+                                      }
+
+                                      new_events.push(closingdate)
+
+
+                                      $('#homeSubmenu').append(
+                                          $('<li>').append(
+                                              $('<a>').attr('href','/'+String(arrays[i].contract_view)).append(
+                                                  $('<span>').attr('class', 'tab').append("Contract "+String(arrays[i].contract_num)+ ":" + String(arrays[i].street))
+
+                                                )));
+                                    }
+
+                                    // console.log(new_events);
+                                    //
+                                    //
+                                    // $('#calendar_week').fullCalendar({
+                                    //
+                                    //     // put your options and callbacks here
+                                    //   defaultView: 'basicWeek',
+                                    //   height: 200,
+                                    //   events:
+                                    //   {
+                                    //   'title': "Contract Date",
+                                    //   'start': "11-2018-2017",
+                                    // }
+                                    //
+                                    // });
+
                                   },
 
                                   // handle a non-successful response

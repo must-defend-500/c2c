@@ -12,6 +12,10 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions, status, authentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.core import serializers
+from django.utils.encoding import force_text
+from django.core.serializers.json import DjangoJSONEncoder
+from django.forms.models import model_to_dict
 
 from .forms import UserInfoForm, UserPreferenceInspector, UserPreferenceLender, UserPreferenceClosing
 from .models import UserInfo, UserPreference, Contract
@@ -44,7 +48,8 @@ class CalendarView(View):
 			#for current user, get all the contract objects, and for each date, add to events
 		contracts = Contract.objects.filter(user=user)
 		for contract in contracts:
-			title_var = str(contract.contract_num)
+			value = [contract.contract_num, contract.street, contract.color, contract.file_view]
+			title_var = str(contract.street)
 			contractdate = {
 				'title': "Contract "+ title_var + ": "+ "Contract Date",
 				'start': str(contract.opening_date),
@@ -159,7 +164,7 @@ def profile_view (request):
 			#handle converting date of mm/dd/yyyy to datetime
 			json_date1 = jsonData['firstDate']
 			json_date2 = jsonData['closing_date']
-			
+
 			if json_date1.count("/")==2:
 				date1 = (datetime.datetime.strptime(json_date1, '%m/%d/%Y').date())
 			elif json_date1.count("/")==1:
@@ -171,7 +176,8 @@ def profile_view (request):
 				date2 = (datetime.datetime.strptime(json_date2, '%m/%d%Y').date())
 
 			user_contract = jsonData['user_contract']
-			data = {}
+			street_address = jsonData['street']
+
 			#write a contract object
 			#url = contract/164
 
@@ -184,18 +190,25 @@ def profile_view (request):
 			file_view = file1,
 			opening_date = date1,
 			closing_date = date2,
-			color = color_contract
+			color = color_contract,
+			street = street_address,
 			)
+			contracts = Contract.objects.filter(user=user).values('contract_view', 'street', 'contract_num', 'opening_date', 'closing_date', 'color')
 
-			return JsonResponse(data)
+			serialized_q = json.dumps(list(contracts), cls=DjangoJSONEncoder)
+			data = serialized_q
+
+			return JsonResponse(data, safe=False)
 
 		#for current user, get all the contract objects, and for each date, add to events
 		contracts = Contract.objects.filter(user=user)
 		events = []
-		contract_urls = []
+		contract_urls = {}
 		for contract in contracts:
-			contract_urls.append(contract.file_view)
-			title_var = str(contract.contract_num)
+			value = [contract.contract_num, contract.street, contract.color, contract.file_view]
+			contract_urls[contract.contract_view]= value
+			#contract_urls.append(contract.color)
+			title_var = str(contract.street)
 			contractdate = {
 				'title': "Contract "+ title_var + ": "+ "Contract Date",
 				'start': str(contract.opening_date),
@@ -209,42 +222,13 @@ def profile_view (request):
 			}
 			events.append(closingdate)
 
-		print(contract_urls)
-		return render(request, "upload.html", {"html_var": True, "username": entry.username, "events": events})
+		return render(request, "upload.html", {"html_var": True, "username": entry.username, "events": events, "contract_urls": contract_urls})
 
-	#document upload
+class LazyEncoder(DjangoJSONEncoder):
+	def default(self, obj):
+		if isinstance(obj, Contract):
+			return force_text(obj)
+		return super(LazyEncoder, self).default(obj)
+
 
 #Pass returned upload information to django backend and create Contract object
-
-
-#version1: a class-based view
-
-# class ProfileView(LoginRequiredMixin, View):
-# 	#check if username's first and lastname have been set, otherwise re-direct user to profile form
-#
-# 	form = NamesCreateForm()
-#
-# 	def get(self, request, *args, **kwargs):
-# 		user = self.request.user
-#
-# 		entry = User.objects.get(username=user)
-#
-# 		lastname = entry.last_name
-# 		firstname = entry.first_name
-# 		if lastname == "" or firstname == "":
-# 			return render(request, "first_login.html", {"form": form})
-# 		else:
-# 			return render(request, "profile.html", {"html_var": True})
-# 	def post(self, request, *args, **kwargs):
-# 		#post first and last name to django database
-# 		form = NamesCreateForm(request.POST)
-# 		if form.is_valid():
-# 			print('valid')
-# 			# obj=form.save(commit=False)
-# 			# obj.save()
-# 			# User.objects.create(first_name='nick', last_name='murray')
-#
-# 			return render(request, "profile.html", {"html_var": True})
-# 		else:
-# 			print('not valid')
-# 			return render(request, "first_login.html", {"form": form})
