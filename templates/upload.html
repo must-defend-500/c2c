@@ -47,18 +47,19 @@
     <div id='calendar_week' style = "padding: 20px"></div>
 
     <div class='row'>
-        <div class='col-6 offset-3'>
+        <div class='col-8 offset-3'>
             <div class='item-loading-queue'>
             </div>
 
-              <div>Create New Contract!  </div>
+              <div class = "card w-75">
+                <div class="card-block">
+                <h3 class ="card-title" style="text-align:center">Create New Contract!</h3>
               <input type="button" value="Contract Loaded!" onClick="window.location.reload()" id= "refreshButton">
-                <div class="panel-body">
                   <form class='cfeproj-upload-form'>
-                    <input class='cfeproj-upload-file form-control' type='file' accept='.pdf/*,image/*' multiple='multiple' />
+                    <input class='cfeproj-upload-file form-control-file' type='file' accept='.pdf/*,image/*' multiple='multiple' />
                   </form>
                 </div>
-
+              </div>
         </div>
     </div>
     {% endblock content %}
@@ -345,7 +346,8 @@ function uploadFile(fileItem){
                                   console.log(JSON.parse(jsondata));
                                   var arrays = JSON.parse(jsondata);
                                     alert("Your contract has been uploaded");
-                                    //$( "#refreshButton" ).show();
+                                    // $(".progress").remove();
+                                    // $(".item-loading-queue").empty();
                                     //re-do the fullCalendar and sidebar
 
                                     //clear homeSubmenu

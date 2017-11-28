@@ -104,14 +104,30 @@ class ViewFile(View):
         street = contracts[0]['street']
         aws_dl_object =  AWSDownload(AWS_UPLOAD_ACCESS_KEY_ID, AWS_UPLOAD_SECRET_KEY, AWS_UPLOAD_BUCKET, AWS_UPLOAD_REGION)
         file_url = aws_dl_object.generate_url(path)
+        contracts_theone = Contract.objects.filter(contract_view=passed_value)
         contracts_all = Contract.objects.filter(user=user)
         contract_urls = {}
-        event_list = []
+        events = []
+        contract_urls = {}
         for contract in contracts_all:
             value = [contract.contract_num, contract.street, contract.color, contract.file_view]
             contract_urls[contract.contract_view]= value
+        for contract in contracts_theone:
+            title_var = str(contract.street)
+            contractdate = {
+            'title': "Contract "+ title_var + ": "+ "Contract Date",
+            'start': str(contract.opening_date),
+            'color': contract.color,
+            }
+            events.append(contractdate)
+            closingdate = {
+            'title': "Contract "+ title_var + ": "+ "Closing Date",
+            'start': str(contract.closing_date),
+            'color': contract.color,
+            }
+            events.append(closingdate)
 
-        return render(request, "contractView.html", {"html_var": True, "username": entry.username,  "source_url": file_url, "street": street, "events": event_list, "contract_urls": contract_urls})
+        return render(request, "contractView.html", {"html_var": True, "username": entry.username,  "source_url": file_url, "street": street, "events": events, "contract_urls": contract_urls})
 
 class FileUploadCompleteHandler(APIView):
  permission_classes = [permissions.IsAuthenticated]

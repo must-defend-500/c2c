@@ -44,6 +44,8 @@ class test(View):
 class CalendarView(View):
 	def get(self, request, *args, **kwargs):
 		user = request.user.id
+		username1 = request.user
+		entry = User.objects.get(username=username1)
 		events = []
 			#for current user, get all the contract objects, and for each date, add to events
 		contracts = Contract.objects.filter(user=user)
@@ -63,7 +65,7 @@ class CalendarView(View):
 			}
 			events.append(closingdate)
 
-		return render(request, "calendar.html", {"html_var": True, "events": events})
+		return render(request, "calendar.html", {"html_var": True, "events": events, "username":entry.username})
 
 class ContractView(View):
 	def get(self, request, *args, **kwargs):
@@ -156,7 +158,9 @@ def profile_view (request):
 	#if new contract is created on homepage
 	else:
 		# NEED TO FIGURE OUT CSRF shit
-		if request.method == 'POST' and UserPreference.objects.filter(user=user).exists():
+		if request.method == 'POST':
+			#and request.POST.get('data')
+			print(request.POST.get('data'))
 			event_list = request.POST.get('data')
 			jsonData = json.loads(event_list)
 
