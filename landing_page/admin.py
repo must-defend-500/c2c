@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserInfo, UserPreference
+from .models import UserInfo, UserPreference, Contract
 
 # Register your models here.
 
@@ -8,3 +8,4 @@ from .models import UserInfo, UserPreference
 
 admin.site.register(UserInfo)
 admin.site.register(UserPreference)
+admin.site.register(Contract)

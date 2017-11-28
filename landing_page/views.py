@@ -14,7 +14,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .forms import UserInfoForm, UserPreferenceInspector, UserPreferenceLender, UserPreferenceClosing
-from .models import UserInfo, UserPreference
+from .models import UserInfo, UserPreference, Contract
+
+import datetime
+import json
+import random
 
 # Create your views here.
 
@@ -41,16 +45,6 @@ class CalendarView(View):
 				'start'  : '2017-11-24',
 				'color'  : 'green'
 			},
-			# {
-			# 	title  : 'event2',
-			# 	start  : '2010-01-05',
-			# 	end    : '2010-01-07'
-			# },
-			# {
-			# 	title  : 'event3',
-			# 	start  : '2010-01-09T12:30:00',
-			# 	allDay : false
-			# }
 		]
 		return render(request, "calendar.html", {"html_var": True, "events": events})
 #Django Base-View
@@ -66,31 +60,30 @@ class UserProfile(View):
 
 #version3: new profile view with UserInfoForm
 def profile_view (request):
-	user = request.user
-	entry = User.objects.get(username=user)
+	user = request.user.id
+	username1 = request.user
+	entry = User.objects.get(username=username1)
 	#grab the UserInfo object in order to match UserPreference
-	check_user = UserInfo.objects.filter(user_id = user)
 
 	#User checking: if they don't exist
-	if not UserInfo.objects.filter(user_id = user).exists() or not UserPreference.objects.filter(user=check_user).exists():
+	if not UserInfo.objects.filter(user = user).exists() or not UserPreference.objects.filter(user=user).exists():
 		#if first name and last name are not set
-		if (request.method == "GET" and not UserInfo.objects.filter(user_id = user).exists()):
+		if (request.method == "GET" and not UserInfo.objects.filter(user = user).exists()):
 			form = UserInfoForm()
 			return render(request, "first_login.html", {"form": form, "username": entry.username})
 		#
-		elif(request.method == "GET" and UserInfo.objects.filter(user_id = user).exists() and not UserPreference.objects.filter(user=check_user).exists()):
+		elif(request.method == "GET" and UserInfo.objects.filter(user = user).exists() and not UserPreference.objects.filter(user=user).exists()):
 			form1 = UserPreferenceInspector()
 			form2 = UserPreferenceLender()
 			form3 = UserPreferenceClosing()
 			return render(request, "user_preferences.html", {"html_var": True, "form1":form1, "form2":form2, "form3":form3, "username":entry.username})
 		#
-		elif (request.method == "POST" and not UserInfo.objects.filter(user_id = user).exists()):
+		elif (request.method == "POST" and not UserInfo.objects.filter(user = user).exists()):
 			form = UserInfoForm(request.POST)
 			if form.is_valid():
 				#NEED TO UPDATE, not save new entry
-				print("form is valid")
 				UserInfo.objects.create(
-					user_id = entry,
+					user = entry,
 					user_email = entry.email,
 					last_name = form.cleaned_data.get('last_name'),
 					first_name = form.cleaned_data.get('first_name')
@@ -103,7 +96,7 @@ def profile_view (request):
 				print("Form is not valid")
 				#print(form.errors)
 				return render(request,  "first_login.html", {"form": form, "username": entry.username})
-		elif (request.method == "POST" and UserInfo.objects.filter(user_id = user).exists() and not UserPreference.objects.filter(user=check_user).exists()):
+		elif (request.method == "POST" and UserInfo.objects.filter(user = user).exists() and not UserPreference.objects.filter(user=user).exists()):
 			form1 = UserPreferenceInspector(request.POST)
 			form2 = UserPreferenceLender(request.POST)
 			form3 = UserPreferenceClosing(request.POST)
@@ -111,6 +104,7 @@ def profile_view (request):
 				#create form
 				print("form is valid")
 				UserPreference.objects.create(
+					user = entry,
 					inspector1 = form1.cleaned_data.get('inspector1'),
 					inspector2 = form1.cleaned_data.get('inspector2'),
 					inspector3 = form1.cleaned_data.get('inspector3'),
@@ -123,7 +117,8 @@ def profile_view (request):
 					closingco2 = form3.cleaned_data.get('closingco2'),
 					closingco3 = form3.cleaned_data.get('closingco3'),
 				)
-				return render(request, "upload.html", {"html_var": True, "username": entry.username})
+				events1 = []
+				return render(request, "upload.html", {"html_var": True, "username": entry.username, "events":events1})
 			#if form is not valid
 			else:
 				print("Form is not valid")
@@ -135,29 +130,54 @@ def profile_view (request):
 	#if new contract is created on homepage
 	else:
 		# NEED TO FIGURE OUT CSRF shit
-		# def post(self, request, *args, **kwargs):
 		if request.method == 'POST':
-			print("in test view")
 			event_list = request.POST.get('data')
-			print(event_list)
+			jsonData = json.loads(event_list)
+
+			file1 = jsonData['contract_view_url']
+			#handle converting date of mm/dd/yyyy to datetime
+			date1 = (datetime.datetime.strptime(jsonData['firstDate'], '%m/%d/%Y').date())
+			date2 = (datetime.datetime.strptime(jsonData['closing_date'], '%m/%d/%Y').date())
+			user_contract = jsonData['user_contract']
 			data = {}
 			#write a contract object
 			#url = contract/164
-			
 
-			# Contract.objects.create(
-			# user =
-			# contract_view =
-			# file_view =
-			# opening_date =
-			# closing_date =
-			# color =
-			# )
+			r = lambda: random.randint(0,255)
+			color_contract = '#%02X%02X%02X' % (r(),r(),r())
+
+			Contract.objects.create(
+			user = entry,
+			contract_view = user_contract,
+			file_view = file1,
+			opening_date = date1,
+			closing_date = date2,
+			color = color_contract
+			)
 
 			return JsonResponse(data)
 
 
-		return render(request, "upload.html", {"html_var": True, "username": entry.username})
+		#for current user, get all the contract objects, and for each date, add to events
+		contracts = Contract.objects.filter(user=user)
+		events = []
+		for contract in contracts:
+			title_var = str(contract.contract_num)
+			contractdate = {
+				'title': "Contract "+ title_var + ": "+ "Contract Date",
+				'start': str(contract.opening_date),
+				'color': contract.color,
+			}
+			events.append(contractdate)
+			closingdate = {
+					'title': "Contract "+ title_var + ": "+ "Closing Date",
+					'start': str(contract.closing_date),
+					'color': contract.color,
+			}
+			events.append(closingdate)
+
+
+		return render(request, "upload.html", {"html_var": True, "username": entry.username, "events": events})
 
 	#document upload
 

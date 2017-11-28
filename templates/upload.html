@@ -1,5 +1,19 @@
-{% extends "base_cfe.html" %}
+
+{% extends "base.html" %}
+
+{% block content_calendar %}
+
+  {% include 'snippets/calendarscripts.html' %}
+
+{% endblock content_calendar %}
+
+
+
 {% block content %}
+<h2>Hello, {{username}} </h2>
+<div id='calendar_week'>
+</div>
+
 <div class='row'>
     <div class='col-6 offset-3'>
         <div class='item-loading-queue'>
@@ -16,8 +30,21 @@
 <script>
 $(document).ready(function(){
 
+  // page is now ready, initialize the calendar...
+  var event_list = {{events|safe}};
+  console.log(event_list);
+
+  $('#calendar_week').fullCalendar({
+      // put your options and callbacks here
+    defaultView: 'basicWeek',
+    height: 200,
+    events: event_list
+
+  })
+
 //global variable to set as the view contract url
 var contract_view_url;
+var user_contract;
 
     // setup session cookie data. This is Django-related
     function getCookie(name) {
@@ -87,6 +114,7 @@ function verifyFileIsImagePDF(file){
 function constructFormPolicyData(policyData, fileItem) {
    var contentType = fileItem.type != '' ? fileItem.type : 'application/octet-stream'
     var url = policyData.url
+    user_contract = (policyData.file_bucket_path)
     contract_view_url = policyData.final_upload_path
     var filename = policyData.filename
     var repsonseUser = policyData.user
@@ -165,7 +193,6 @@ function uploadFile(fileItem){
                     formData.append("language"   , "eng");
                     formData.append("apikey"  , '122490766b88957');
                     formData.append("isOverlayRequired", true);
-                    console.log(data.url);
                     url_ocr = 'https://api.ocr.space/parse/image';
 
                     //Send OCR Parsing request asynchronously
@@ -215,7 +242,8 @@ function uploadFile(fileItem){
                         }
 
                         //create JSON object to pass to calendar app
-                        events = {'firstDate':contract_date, 'closing_date': closing_date, 'contract_view_url':contract_view_url};
+                        events = {'firstDate':contract_date, 'closing_date': closing_date,
+                        'contract_view_url':contract_view_url, 'user_contract':user_contract};
                       }
                     }).done(function(){
                       var json = JSON.stringify(events);
@@ -234,7 +262,6 @@ function uploadFile(fileItem){
                                 // handle a successful response
                                 success : function(jsondata) {
                                   console.log("success");
-                                  console.log(jsondata); // log the returned json to the console
                                   },
 
                                   // handle a non-successful response
