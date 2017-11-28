@@ -2,26 +2,68 @@
 {% extends "base.html" %}
 
 {% block content_calendar %}
-
+  {%include "snippets/v.html"%}
   {% include 'snippets/calendarscripts.html' %}
 
 {% endblock content_calendar %}
 
+{%block content_sidebar%}
 
+<div id="content">
+    <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
+        <i class="glyphicon glyphicon-align-left"></i>
+        Toggle Sidebar
+    </button>
+
+
+</div>
+
+
+        <nav id="sidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <h3>Collapsible Sidebar</h3>
+            </div>
+
+            <!-- Sidebar Links -->
+            <ul class="list-unstyled components">
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+
+                <!-- Link with dropdown items -->
+                  <li> <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Pages</a></li>
+
+                    <ul class="collapse list-unstyled" id="homeSubmenu">
+                        <li><a href="#">Page</a></li>
+                        <li><a href="#">Page</a></li>
+                        <li><a href="#">Page</a></li>
+                    </ul>
+
+                <li><a href="#">Portfolio</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+
+
+
+{%endblock content_sidebar%}
 
 {% block content %}
 <h2>Hello, {{username}} </h2>
-<div id='calendar_week'>
-</div>
+<div id='calendar_week'></div>
 
 <div class='row'>
     <div class='col-6 offset-3'>
         <div class='item-loading-queue'>
-
         </div>
-        <form class='cfeproj-upload-form'>
-            <input class='cfeproj-upload-file form-control' type='file' accept='.pdf/*,image/*' multiple='multiple' />
-        </form>
+
+          <div>Create New Contract!  </div>
+            <div class="panel-body">
+              <form class='cfeproj-upload-form'>
+                <input class='cfeproj-upload-file form-control' type='file' accept='.pdf/*,image/*' multiple='multiple' />
+              </form>
+            </div>
+
     </div>
 </div>
 {% endblock content %}
@@ -30,9 +72,12 @@
 <script>
 $(document).ready(function(){
 
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').toggleClass('active');
+    });
+
   // page is now ready, initialize the calendar...
   var event_list = {{events|safe}};
-  console.log(event_list);
 
   $('#calendar_week').fullCalendar({
       // put your options and callbacks here
@@ -150,6 +195,7 @@ function fileUploadComplete(fileItem, policyData){
             alert("An error occured, please refresh the page.")
         }
     })
+
 }
 
 function displayItems(fileItemList){
@@ -262,6 +308,7 @@ function uploadFile(fileItem){
                                 // handle a successful response
                                 success : function(jsondata) {
                                   console.log("success");
+                                    alert("Your contract has been uploaded");
                                   },
 
                                   // handle a non-successful response
@@ -312,6 +359,8 @@ function uploadFile(fileItem){
               console.log("Complete")
               // handle FileItem Upload being complete.
               fileUploadComplete(fileItem, policyData)
+              $( ".item-loading-queue" ).empty();
+
 
           })
 

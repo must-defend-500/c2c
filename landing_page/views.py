@@ -39,14 +39,35 @@ class test(View):
 
 class CalendarView(View):
 	def get(self, request, *args, **kwargs):
-		events = [
-			{
-				'title'  : 'opening date',
-				'start'  : '2017-11-24',
-				'color'  : 'green'
-			},
-		]
+		user = request.user.id
+		events = []
+			#for current user, get all the contract objects, and for each date, add to events
+		contracts = Contract.objects.filter(user=user)
+		for contract in contracts:
+			title_var = str(contract.contract_num)
+			contractdate = {
+				'title': "Contract "+ title_var + ": "+ "Contract Date",
+				'start': str(contract.opening_date),
+				'color': contract.color,
+			}
+			events.append(contractdate)
+			closingdate = {
+					'title': "Contract "+ title_var + ": "+ "Closing Date",
+					'start': str(contract.closing_date),
+					'color': contract.color,
+			}
+			events.append(closingdate)
+
 		return render(request, "calendar.html", {"html_var": True, "events": events})
+
+class ContractView(View):
+	def get(self, request, *args, **kwargs):
+		user = request.user.id
+		contracts = Contract.objects.filter(user=user)
+
+		return render(request, "landing_page.html", {"html_var": True})
+
+
 #Django Base-View
 class HomeView(View):
 	def get(self, request, *args, **kwargs):
@@ -136,8 +157,19 @@ def profile_view (request):
 
 			file1 = jsonData['contract_view_url']
 			#handle converting date of mm/dd/yyyy to datetime
-			date1 = (datetime.datetime.strptime(jsonData['firstDate'], '%m/%d/%Y').date())
-			date2 = (datetime.datetime.strptime(jsonData['closing_date'], '%m/%d/%Y').date())
+			json_date1 = jsonData['firstDate']
+			json_date2 = jsonData['closing_date']
+			
+			if json_date1.count("/")==2:
+				date1 = (datetime.datetime.strptime(json_date1, '%m/%d/%Y').date())
+			elif json_date1.count("/")==1:
+				date1 = (datetime.datetime.strptime(json_date1, '%m/%d%Y').date())
+
+			if json_date2.count("/")==2:
+				date2 = (datetime.datetime.strptime(json_date2, '%m/%d/%Y').date())
+			elif json_date2.count("/")==1:
+				date2 = (datetime.datetime.strptime(json_date2, '%m/%d%Y').date())
+
 			user_contract = jsonData['user_contract']
 			data = {}
 			#write a contract object
@@ -157,11 +189,12 @@ def profile_view (request):
 
 			return JsonResponse(data)
 
-
 		#for current user, get all the contract objects, and for each date, add to events
 		contracts = Contract.objects.filter(user=user)
 		events = []
+		contract_urls = []
 		for contract in contracts:
+			contract_urls.append(contract.file_view)
 			title_var = str(contract.contract_num)
 			contractdate = {
 				'title': "Contract "+ title_var + ": "+ "Contract Date",
@@ -176,7 +209,7 @@ def profile_view (request):
 			}
 			events.append(closingdate)
 
-
+		print(contract_urls)
 		return render(request, "upload.html", {"html_var": True, "username": entry.username, "events": events})
 
 	#document upload
@@ -215,28 +248,3 @@ def profile_view (request):
 # 		else:
 # 			print('not valid')
 # 			return render(request, "first_login.html", {"form": form})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Django Base-TemplateView
-# class HomeTemplateView(TemplateView):
-# 	template_name = 'landing_page.html'
-
-# 	def get_context_data(self, *args, **kwargs):
-# 		context = super(HomeTemplateView, self).get_context_data(*args, **kwargs)
-
-# 	def get(self, request, *args, **kwargs):
-# 		return render(request, "landing_page.html", {"html_var": True})
