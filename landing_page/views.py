@@ -156,7 +156,7 @@ def profile_view (request):
 	#if new contract is created on homepage
 	else:
 		# NEED TO FIGURE OUT CSRF shit
-		if request.method == 'POST':
+		if request.method == 'POST' and UserPreference.objects.filter(user=user).exists():
 			event_list = request.POST.get('data')
 			jsonData = json.loads(event_list)
 

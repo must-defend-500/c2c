@@ -28,7 +28,7 @@ urlpatterns = [
     url(r'^accounts/calendar/$', CalendarView.as_view()),
     url(r'^viewfile$', ViewFile.as_view()),
     #/c2c.ai/44/
-    # url(r'^(?P<username>\w+)$', ViewFile.as_view()),
+    url(r'^(?P<username>[\w.@+-]+/\d{1,5}/)$', ViewFile.as_view()),
     url(r'^test/$', test.as_view()),
     url(r'^api/files/complete/$', FileUploadCompleteHandler.as_view(), name='upload-complete'),
     url(r'^api/files/policy/$', FilePolicyAPI.as_view(), name='upload-policy'),

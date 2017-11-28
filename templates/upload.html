@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block content_calendar %}
@@ -17,7 +16,7 @@
 
             <!-- Sidebar Links -->
             <ul class="list-unstyled components">
-                <li class="active"><a href="/">Home</a></li>
+                <li class="active"><a href="/profile">Home</a></li>
                 <li><a href="#">About</a></li>
 
                 <!-- Link with dropdown items -->
@@ -38,14 +37,14 @@
 <nav class="navbar navbar-inverse">
     <div class="navbar-header">
         <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
-            <i class="glyphicon glyphicon-align-left"></i>
-            <span>Toggle</span>
+            <i class="glyphicon glyphicon-align-justify" style= "height:100px"></i>
+            <span> Menu </span>
         </button>
       </div>
   </nav>
 
     {% block content %}
-    <div id='calendar_week'></div>
+    <div id='calendar_week' style = "padding: 20px"></div>
 
     <div class='row'>
         <div class='col-6 offset-3'>

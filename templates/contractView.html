@@ -1,0 +1,96 @@
+
+{% extends "base.html" %}
+
+{% block content_calendar %}
+  {%include "snippets/v.html"%}
+  {% include 'snippets/calendarscripts.html' %}
+
+{% endblock content_calendar %}
+
+{%block content_sidebar%}
+
+      <nav id="sidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <h3>{{username}}</h3>
+            </div>
+
+            <!-- Sidebar Links -->
+            <ul class="list-unstyled components">
+                <li class="active"><a href="/profile">Home</a></li>
+                <li><a href="#">About</a></li>
+
+                <!-- Link with dropdown items -->
+                  <li> <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Active Contracts</a></li>
+
+                    <ul class="collapse list-unstyled" id="homeSubmenu">
+                    </ul>
+
+                <li><a href='/accounts/calendar'>Calendar</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Portfolio</a></li>
+                <li><a href='/accounts/logout'>Logout</a></li>
+            </ul>
+        </nav>
+
+<div id="content">
+
+<nav class="navbar navbar-inverse">
+    <div class="navbar-header">
+        <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
+            <i class="glyphicon glyphicon-align-justify" style= "height:100px"></i>
+            <span> Menu </span>
+        </button>
+      </div>
+  </nav>
+
+    {% block content %}
+    <h2 style = "text-align:center"> {{street}} </h2>
+
+    <div id='calendar_week' style = "padding: 20px"></div>
+    
+    <embed src = "{{source_url}}" style = "display: block; margin: auto;" width = "900px" height="800px"/>
+
+    {% endblock content %}
+
+</div>
+
+{%endblock content_sidebar%}
+
+{% block javascript %}
+<script>
+$(document).ready(function(){
+
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').toggleClass('active');
+    });
+
+  // page is now ready, initialize the calendar...
+  var event_list = {{events|safe}};
+
+  $('#calendar_week').fullCalendar({
+      // put your options and callbacks here
+    //defaultView: 'basicWeek',
+    height: 600,
+    width: 600,
+    events: event_list
+
+  });
+
+var contracts_for_sidebar = {{contract_urls|safe}};
+
+for (var key in contracts_for_sidebar) {
+  var counter = 1;
+  $('#homeSubmenu').append(
+      $('<li>').append(
+          $('<a>').attr('href','/'+String(key)).append(
+              $('<span>').attr('class', 'tab').append("Contract "+String(contracts_for_sidebar[key][0])+ ":" + String(contracts_for_sidebar[key][1]))
+              // $('<span>').attr('class', 'tab').attr('style', 'color: '+String(key[0])).append("Contract "+ String(key))
+                // $('<i>').attr('style', 'color: '+String(key[1])).append("Contract "+ String(key))
+  )));
+}
+
+
+});
+</script>
+{% endblock %}

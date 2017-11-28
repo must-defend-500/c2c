@@ -9,6 +9,7 @@ import boto #this is for ViewFile
 
 from django.shortcuts import render
 from rest_framework import permissions, status, authentication
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views import View
@@ -21,6 +22,7 @@ from .config_aws import (
 
 )
 from boto.s3.connection import OrdinaryCallingFormat
+from landing_page.models import UserInfo, UserPreference, Contract
 
 from .models import FileItem
 
@@ -90,15 +92,26 @@ class AWSDownload(object):
         return file_url
 
 class ViewFile(View):
-    #path = "https://s3-us-west-2.amazonaws.com/c2c-success/c2c.ai/164/164.pdf"
-    # path = "c2c.ai/164/164.pdf"
-
+    #path = "c2c.ai/164/164.pdf"
     def get(self, request, *args, **kwargs):
-        path = "c2c.ai/164/164.pdf"
+        username1 = request.user
+        entry = User.objects.get(username=username1)
+        passed_value = self.kwargs['username']
+        user = request.user.id
+        contracts = Contract.objects.filter(contract_view=passed_value).values()
+        print(contracts)
+        path = contracts[0]['file_view']
+        street = contracts[0]['street']
         aws_dl_object =  AWSDownload(AWS_UPLOAD_ACCESS_KEY_ID, AWS_UPLOAD_SECRET_KEY, AWS_UPLOAD_BUCKET, AWS_UPLOAD_REGION)
         file_url = aws_dl_object.generate_url(path)
-        print(file_url)
-        return render(request, "profile.html", {"html_var": True, "source_url": file_url})
+        contracts_all = Contract.objects.filter(user=user)
+        contract_urls = {}
+        event_list = []
+        for contract in contracts_all:
+            value = [contract.contract_num, contract.street, contract.color, contract.file_view]
+            contract_urls[contract.contract_view]= value
+
+        return render(request, "contractView.html", {"html_var": True, "username": entry.username,  "source_url": file_url, "street": street, "events": event_list, "contract_urls": contract_urls})
 
 class FileUploadCompleteHandler(APIView):
  permission_classes = [permissions.IsAuthenticated]
