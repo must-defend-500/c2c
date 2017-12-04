@@ -22,7 +22,7 @@ from .config_aws import (
 
 )
 from boto.s3.connection import OrdinaryCallingFormat
-from landing_page.models import UserInfo, UserPreference, Contract
+from landing_page.models import UserInfo, UserPreference
 
 from .models import FileItem
 

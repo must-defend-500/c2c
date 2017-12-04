@@ -1,13 +1,15 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import UserInfo, UserPreference
+from .models import UserInfo, UserPreference, UserInvestment, FundInvestment, FundDividend, UserDividend, Fund
 
 class UserInfoForm(forms.ModelForm):
     class Meta:
         model = UserInfo
         fields =[
+            'user_email',
             'first_name',
-            'last_name'
+            'last_name',
+            'wallet'
         ]
 
 

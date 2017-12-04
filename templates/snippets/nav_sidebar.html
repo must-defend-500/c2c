@@ -1,0 +1,22 @@
+<nav id="sidebar">
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+          <h3>{{username}}</h3>
+      </div>
+
+      <!-- Sidebar Links -->
+      <ul class="list-unstyled components">
+          <li class="active"><a href="/profile">Home</a></li>
+          <li><a href="/account">Account</a></li>
+
+          <!-- Link with dropdown items -->
+            <li> <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Investments</a></li>
+
+              <ul class="collapse list-unstyled" id="homeSubmenu">
+              </ul>
+
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Portfolio</a></li>
+          <li><a href='/accounts/logout'>Logout</a></li>
+      </ul>
+  </nav>

@@ -2,7 +2,6 @@
 
 {% block content_calendar %}
   {%include "snippets/v.html"%}
-  {% include 'snippets/calendarscripts.html' %}
 
 {% endblock content_calendar %}
 
@@ -17,15 +16,14 @@
             <!-- Sidebar Links -->
             <ul class="list-unstyled components">
                 <li class="active"><a href="/profile">Home</a></li>
-                <li><a href="#">About</a></li>
+                <li><a href="/account">Account</a></li>
 
                 <!-- Link with dropdown items -->
-                  <li> <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Active Contracts</a></li>
+                  <li> <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">Investments</a></li>
 
                     <ul class="collapse list-unstyled" id="homeSubmenu">
                     </ul>
 
-                <li><a href='/accounts/calendar'>Calendar</a></li>
                 <li><a href="#">Contact</a></li>
                 <li><a href="#">Portfolio</a></li>
                 <li><a href='/accounts/logout'>Logout</a></li>
@@ -43,25 +41,53 @@
       </div>
   </nav>
 
+  <p style = "padding: 20px"> hey </p>
+
     {% block content %}
-    <div id='calendar_week' style = "padding: 20px"></div>
 
-    <div class='row'>
-        <div class='col-8 offset-3'>
-            <div class='item-loading-queue'>
-            </div>
-
-              <div class = "card w-75">
-                <div class="card-block">
-                <h3 class ="card-title" style="text-align:center">Create New Contract!</h3>
-              <input type="button" value="Contract Loaded!" onClick="window.location.reload()" id= "refreshButton">
-                  <form class='cfeproj-upload-form'>
-                    <input class='cfeproj-upload-file form-control-file' type='file' accept='.pdf/*,image/*' multiple='multiple' />
-                  </form>
-                </div>
-              </div>
-        </div>
+    <!-- first half of funds -->
+    <div class="row" style = "padding: 20px">
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-block">
+        <h3 class="card-title">REIT</h3>
+        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+        <a href="funds/REIT" class="btn btn-primary">Invest </a>
+      </div>
     </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-block">
+        <h3 class="card-title">BioTech</h3>
+        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+        <a href="funds/BioTech" class="btn btn-primary">Invest </a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- second half of funds -->
+<div class="row" style = "padding: 20px">
+<div class="col-sm-6">
+<div class="card">
+  <div class="card-block">
+    <h3 class="card-title">Tech</h3>
+    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+    <a href="funds/Tech" class="btn btn-primary">Invest </a>
+  </div>
+</div>
+</div>
+<div class="col-sm-6">
+<div class="card">
+  <div class="card-block">
+    <h3 class="card-title">Crypto</h3>
+    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+    <a href="funds/Crypto" class="btn btn-primary">Invest </a>
+  </div>
+</div>
+</div>
+</div>
+
     {% endblock content %}
 
 </div>
@@ -72,391 +98,21 @@
 <script>
 $(document).ready(function(){
 
-  $( "#refreshButton" ).hide();
-
     $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('active');
     });
 
-  // page is now ready, initialize the calendar...
-  var event_list = {{events|safe}};
 
-  $('#calendar_week').fullCalendar({
-      // put your options and callbacks here
-    defaultView: 'basicWeek',
-    height: 200,
-    events: event_list
+// for (var key in contracts_for_sidebar) {
+//   var counter = 1;
+//   $('#homeSubmenu').append(
+//       $('<li>').append(
+//           $('<a>').attr('href','/'+String(key)).append(
+//               $('<span>').attr('class', 'tab').append("Contract "+String(contracts_for_sidebar[key][0])+ ":" + String(contracts_for_sidebar[key][1]))
+//
+//   )));
+// }
 
-  });
-
-var contracts_for_sidebar = {{contract_urls|safe}};
-
-for (var key in contracts_for_sidebar) {
-  var counter = 1;
-  $('#homeSubmenu').append(
-      $('<li>').append(
-          $('<a>').attr('href','/'+String(key)).append(
-              $('<span>').attr('class', 'tab').append("Contract "+String(contracts_for_sidebar[key][0])+ ":" + String(contracts_for_sidebar[key][1]))
-              // $('<span>').attr('class', 'tab').attr('style', 'color: '+String(key[0])).append("Contract "+ String(key))
-                // $('<i>').attr('style', 'color: '+String(key[1])).append("Contract "+ String(key))
-  )));
-}
-
-//global variable to set as the view contract url
-var contract_view_url;
-var user_contract;
-
-    // setup session cookie data. This is Django-related
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    var csrftoken = getCookie('csrftoken');
-    function csrfSafeMethod(method) {
-        // these HTTP methods do not require CSRF protection
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-    }
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-           if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-           }
-        }
-    });
-    // end session cookie data setup.
-
-// declare an empty array for potential uploaded files
-var fileItemList = []
-var array = [];
-
-// auto-upload on file input change.
-$(document).on('change','.cfeproj-upload-file', function(event){
-    var selectedFiles = $(this).prop('files');
-    formItem = $(this).parent()
-    $.each(selectedFiles, function(index, item){
-        var myFile = verifyFileIsImagePDF(item)
-        if (myFile){
-            uploadFile(myFile)
-        } else {
-            alert("You need to upload an image or pdf")
-        }
-    })
-    $(this).val('');
-
-})
-
-
-function verifyFileIsImagePDF(file){
-    // verifies the file extension is one we support.
-    var extension = file.name.split('.').pop().toLowerCase(); //file.substr( (file.lastIndexOf('.') +1) );
-    switch(extension) {
-        case 'jpg':
-        case 'png':
-        case 'jpeg':
-            return file
-        case 'pdf':
-            return file
-        default:
-            return null
-    }
-};
-
-function constructFormPolicyData(policyData, fileItem) {
-   var contentType = fileItem.type != '' ? fileItem.type : 'application/octet-stream'
-    var url = policyData.url
-    user_contract = (policyData.file_bucket_path)
-    contract_view_url = policyData.final_upload_path
-    var filename = policyData.filename
-    var repsonseUser = policyData.user
-    // var keyPath = 'www/' + repsonseUser + '/' + filename
-    var keyPath = policyData.file_bucket_path
-    var fd = new FormData()
-    fd.append('key', keyPath + filename);
-    fd.append('acl','private');
-    fd.append('Content-Type', contentType);
-    fd.append("AWSAccessKeyId", policyData.key)
-    fd.append('Policy', policyData.policy);
-    fd.append('filename', filename);
-    fd.append('Signature', policyData.signature);
-    fd.append('file', fileItem);
-    return fd
-}
-
-function fileUploadComplete(fileItem, policyData){
-    data = {
-        uploaded: true,
-        fileSize: fileItem.size,
-        file: policyData.file_id,
-
-    }
-    $.ajax({
-        method:"POST",
-        data: data,
-        url: "/api/files/complete/",
-        success: function(data){
-            displayItems(fileItemList)
-        },
-        error: function(jqXHR, textStatus, errorThrown){
-            alert("An error occured, please refresh the page.")
-        }
-    })
-
-}
-
-function displayItems(fileItemList){
-    var itemList = $('.item-loading-queue')
-    itemList.html("")
-    $.each(fileItemList, function(index, obj){
-        var item = obj.file
-        var id_ = obj.id
-        var order_ = obj.order
-        var html_ = "<div class=\"progress\">" +
-          "<div class=\"progress-bar\" role=\"progressbar\" style='width:" + item.progress + "%' aria-valuenow='" + item.progress + "' aria-valuemin=\"0\" aria-valuemax=\"100\"></div></div>"
-        itemList.append("<div>" + order_ + ") " + item.name + "<a href='#' class='srvup-item-upload float-right' data-id='" + id_ + ")'>X</a> <br/>" + html_ + "</div><hr/>")
-
-    })
-}
-
-function getSecondPart(str) {
-    return str.split(':')[1];
-  }
-
-
-function uploadFile(fileItem){
-        var policyData;
-        var newLoadingItem;
-        var contract_date, closing_date, acceptance_deadline;
-        // get AWS upload policy for each file uploaded through the POST method
-        // Remember we're creating an instance in the backend so using POST is
-        // needed.
-
-        var formData = new FormData();
-        var events = {};
-
-        //first ajax call for the s3 file upload
-
-        $.ajax({
-            method:"POST",
-            data: {
-                filename: fileItem.name
-            },
-            url: "/api/files/policy/",
-            success: function(data){
-                    policyData = data
-                    formData.append("file", fileItem);
-                    formData.append("url", "URL-of-Image-or-PDF-file");
-                    formData.append("language"   , "eng");
-                    formData.append("apikey"  , '122490766b88957');
-                    formData.append("isOverlayRequired", true);
-                    url_ocr = 'https://api.ocr.space/parse/image';
-
-                    //Send OCR Parsing request asynchronously
-                    jQuery.ajax({
-                      url: url_ocr,
-                      data: formData,
-                      dataType: 'json',
-                      cache: false,
-                      contentType: false,
-                      processData: false,
-                      type: 'POST',
-                      success: function (ocrParsedResult) {
-                      //Get the parsed results, exit code and error message and details
-                        var parsedResults = ocrParsedResult["ParsedResults"];
-                        var ocrExitCode = ocrParsedResult["OCRExitCode"];
-                        var isErroredOnProcessing = ocrParsedResult["IsErroredOnProcessing"];
-                        var errorMessage = ocrParsedResult["ErrorMessage"];
-                        var errorDetails = ocrParsedResult["ErrorDetails"];
-                        var processingTimeInMilliseconds = ocrParsedResult["ProcessingTimeInMilliseconds"];
-
-                        //if there are parsed results
-                        if (parsedResults!= null) {
-                          //loop thru these results
-                            $.each(parsedResults, function (index, value) {
-                                var parsedText = value["ParsedText"];
-                                var textOverlay = value["TextOverlay"];
-
-                              $.each(textOverlay["Lines"], function (index, value) {
-                                if(value.MaxHeight == 10 &&value.MinTop==289){
-                                    var array1 = value.Words;
-                                    for(var i =4; i<array1.length; i++){
-                                      var s = array1[i].WordText;
-                                      array.push(s);
-                                    }
-                                     }
-
-                                  if(value.MaxHeight == 10 && value.MinTop==212){
-
-                                    contract_date = String(value.Words[1].WordText);
-
-                                    }
-                                  if(value.MaxHeight == 10 && value.MinTop==524){
-
-                                      closing_date = String(value.Words[0].WordText);
-                                    }
-                                  });
-                              });
-                          }
-
-                        else{
-                          alert("Parsed results did not return anything, filesize could be too large");
-                        }
-
-                        var final_address = "";
-                        var s_1 = getSecondPart(array[0]);
-                        final_address += s_1;
-                        for(var i = 1; i<array.length; i++){
-                          final_address += " ";
-                          final_address += array[i];
-                        }
-                        console.log(final_address);
-
-                        //create JSON object to pass to calendar app
-                        events = {'firstDate':contract_date, 'closing_date': closing_date,
-                        'contract_view_url':contract_view_url, 'user_contract':user_contract, 'street': final_address};
-                      }
-                    }).done(function(){
-                      var json = JSON.stringify(events);
-                      console.log(events);
-                      //pass JSON object back to Django view
-                      jQuery.ajax({
-                                url : "/profile",
-                                type: "POST",
-                                ContentType: 'application/json',
-                                data:
-                                  {'data': json}
-                                ,
-                                  //calltype: 'save',
-                                  // "csrfmiddlewaretoken": '{{ csrf_token }}',
-                                // ,
-                                // handle a successful response
-                                success : function(jsondata) {
-                                  console.log("success");
-
-                                  console.log(JSON.parse(jsondata));
-                                  var arrays = JSON.parse(jsondata);
-                                    alert("Your contract has been uploaded");
-                                    // $(".progress").remove();
-                                    // $(".item-loading-queue").empty();
-                                    //re-do the fullCalendar and sidebar
-
-                                    //clear homeSubmenu
-                                    $('#homeSubmenu').empty();
-                                    // $('#calendar_week').empty();
-
-                                    var new_events = [];
-
-                                    //for (var key in arrays) {
-                                    for(var i = 0; i< arrays.length; i++){
-
-                                      contractdate = {
-                                        'title': "Contract "+ String(arrays[i].street) + ": "+ "Contract Date",
-                                        'start': String(arrays[i].opening_date),
-                                        'color': String(arrays[i].color),
-                                      }
-                                      new_events.push(contractdate)
-                                      closingdate = {
-                                          'title': "Contract "+ String(arrays[i].street) + ": "+ "Closing Date",
-                                          'start': String(arrays[i].opening_date),
-                                          'color': String(arrays[i].color),
-                                      }
-
-                                      new_events.push(closingdate)
-
-
-                                      $('#homeSubmenu').append(
-                                          $('<li>').append(
-                                              $('<a>').attr('href','/'+String(arrays[i].contract_view)).append(
-                                                  $('<span>').attr('class', 'tab').append("Contract "+String(arrays[i].contract_num)+ ":" + String(arrays[i].street))
-
-                                                )));
-                                    }
-
-                                    // console.log(new_events);
-                                    //
-                                    //
-                                    // $('#calendar_week').fullCalendar({
-                                    //
-                                    //     // put your options and callbacks here
-                                    //   defaultView: 'basicWeek',
-                                    //   height: 200,
-                                    //   events:
-                                    //   {
-                                    //   'title': "Contract Date",
-                                    //   'start': "11-2018-2017",
-                                    // }
-                                    //
-                                    // });
-
-                                  },
-
-                                  // handle a non-successful response
-                                  error : function(xhr, textStatus, thrownError) {
-                                    console.log(textStatus);
-                                    console.log(thrownError);
-                                    console.warn(xhr.responseText);
-                                  }
-                        });
-
-                    });
-
-            },
-            error: function(data){
-                alert("An error occured, please try again later")
-            }
-        }).done(function(){
-          // construct the needed data using the policy for AWS
-          var fd = constructFormPolicyData(policyData, fileItem)
-          // use XML http Request to Send to AWS.
-          var xhr = new XMLHttpRequest()
-          // construct callback for when uploading starts
-          xhr.upload.onloadstart = function(event){
-              var inLoadingIndex = $.inArray(fileItem, fileItemList)
-              if (inLoadingIndex == -1){
-                  // Item is not loading, add to inProgress queue
-                  newLoadingItem = {
-                      file: fileItem,
-                      id: policyData.file_id,
-                      order: fileItemList.length + 1
-                  }
-                  fileItemList.push(newLoadingItem)
-                }
-                //console.log(xhr);
-              fileItem.xhr = xhr
-          }
-
-        //  Monitor upload progress and attach to fileItem.
-          xhr.upload.addEventListener("progress", function(event){
-              if (event.lengthComputable) {
-               var progress = Math.round(event.loaded / event.total * 100);
-                  fileItem.progress = progress
-                  displayItems(fileItemList)
-              }
-          })
-
-          xhr.upload.addEventListener("load", function(event){
-              console.log("Complete")
-              // handle FileItem Upload being complete.
-              fileUploadComplete(fileItem, policyData)
-              $( ".item-loading-queue" ).empty();
-
-
-          })
-
-          xhr.open('POST', policyData.url , true);
-          xhr.send(fd);
-        })
-}
 });
 </script>
 {% endblock %}

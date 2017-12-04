@@ -19,24 +19,23 @@ from django.contrib import admin
 from django.contrib.auth.views import LoginView
 from django.views.generic.base import TemplateView
 
-from landing_page.views import HomeView, profile_view, CalendarView, ContractCreation, test
+from landing_page.views import HomeView, profile_view, ViewFund, ViewAccount, ChartData
 from files.views import FilePolicyAPI, FileUploadCompleteHandler, ViewFile
 
 urlpatterns = [
     #need to authorize these properly
     url(r'^upload/$', TemplateView.as_view(template_name='upload.html'), name='upload-home'),
-    url(r'^accounts/calendar/$', CalendarView.as_view()),
+    #capture this url in order to
+    url(r'^funds/(?P<fund>REIT|Crypto|Tech|BioTech)/$', ViewFund.as_view()),
+    url(r'^api/charts/(?P<fund>REIT|Crypto|Tech|BioTech)/$', ChartData.as_view()),
     url(r'^viewfile$', ViewFile.as_view()),
+    url(r'^account$', ViewAccount.as_view()),
     #/c2c.ai/44/
     url(r'^(?P<username>[\w.@+-]+/\d{1,5}/)$', ViewFile.as_view()),
-    url(r'^test/$', test.as_view()),
     url(r'^api/files/complete/$', FileUploadCompleteHandler.as_view(), name='upload-complete'),
     url(r'^api/files/policy/$', FilePolicyAPI.as_view(), name='upload-policy'),
-    url(r'^contract/$', ContractCreation.as_view(), name='upload-policy'),
     url(r'^admin/', admin.site.urls),
     url(r'^profile', profile_view),
-    #url(r'^accounts/profile', ProfileView.as_view()),
     url(r'^$', HomeView.as_view()),
-    #url(r'^login/$', LoginView.as_view(), name='login'),
 	url(r'^accounts/', include('allauth.urls')),
 ]

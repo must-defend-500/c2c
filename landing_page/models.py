@@ -12,9 +12,78 @@ class UserInfo(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     user_timestamp = models.DateField(auto_now_add=True)
+    wallet = models.CharField(max_length=100, default = '000000')
 
     def __str__(self):
         return self.user.username
+
+
+class Fund(models.Model):
+    fund_categories = (
+    ('0', 'REIT'),
+    ('1', 'BioTech'),
+    ('2', 'Tech'),
+    ('3', 'Crypto')
+    )
+    category = models.CharField(max_length =1, primary_key = True,  choices = fund_categories)
+    net_asset_value = models.DecimalField(max_digits = 12, decimal_places= 3)
+    cash_amount = models.DecimalField(max_digits = 12, decimal_places= 3)
+    BTC_amount = models.DecimalField(max_digits = 12, decimal_places= 6)
+    ETH_amount = models.DecimalField(max_digits = 12, decimal_places= 3)
+    LTC_amount = models.DecimalField(max_digits = 12, decimal_places= 3)
+    investment_value = models.DecimalField(max_digits = 12, decimal_places= 3)
+
+    def __str__(self):
+        return self.category
+
+class UserInvestment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    currencies = (
+    ('0', 'BTC'),
+    ('1', 'ETH'),
+    ('2', 'LTC')
+    )
+    currency = models.CharField(max_length =1, choices = currencies)
+    amount = models.DecimalField(max_digits = 10, decimal_places= 3)
+    fund_category = models.ForeignKey(Fund, on_delete=models.CASCADE)
+    date = models.DateTimeField()
+
+class FundInvestment(models.Model):
+    business_name = models.CharField(max_length = 75)
+    amount_invested = models.DecimalField(max_digits = 12, decimal_places= 3)
+    fund_category = models.ForeignKey(Fund, on_delete=models.CASCADE)
+    investment_date = models.DateTimeField()
+
+    def __str__(self):
+        return self.business_name
+
+class FundDividend(models.Model):
+    dividend_date = models.DateTimeField()
+    currencies = (
+    ('0', 'BTC'),
+    ('1', 'ETH'),
+    ('2', 'LTC')
+    )
+    currency = models.CharField(max_length =1, choices = currencies)
+    dividend_amount = models.DecimalField(max_digits = 12, decimal_places= 3)
+    payer = models.ForeignKey(FundInvestment, on_delete=models.CASCADE, related_name='Business')
+    payee = models.ForeignKey(Fund, on_delete=models.CASCADE, related_name = 'Fund', default='default fund')
+
+    def __str__(self):
+        name = str(self.dividend_date)+ "- "+ str(self.payer) + " "+ str(self.payee)
+        return name
+
+class UserDividend(models.Model):
+    payee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    currencies = (
+    ('0', 'BTC'),
+    ('1', 'ETH'),
+    ('2', 'LTC')
+    )
+    currency = models.CharField(max_length =1, choices = currencies)
+    dividend_amount = models.DecimalField(max_digits = 12, decimal_places= 3)
+    payer = models.ForeignKey( Fund, on_delete=models.CASCADE)
+    dividend_date = models.DateTimeField()
 
 class UserPreference(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, primary_key=True, on_delete=models.CASCADE)
@@ -56,33 +125,3 @@ class UserPreference(models.Model):
 
     def __str__(self):
         return str(self.user)
-
-class Contract(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    contract_num = models.AutoField(primary_key=True)
-    #user = models.ForeignKey(UserInfo, to_field='user_id', primary_key=True, on_delete=models.CASCADE)
-    #path = models.TextField(blank=True, null=True)
-    contract_view = models.URLField() #/contract/164
-    file_view = models.URLField() #viewing the actual contract /username/164/164.[df]
-    opening_date = models.DateField(auto_now=False, auto_now_add=False)
-    closing_date = models.DateField(auto_now=False, auto_now_add=False)
-    email = models.EmailField(null=True)
-    parties = models.CharField(max_length=200, null=True)
-    street = models.CharField(max_length=200, null=True)
-    city = models.CharField(max_length=200, null=True)
-    state = models.CharField(max_length=200, null=True)
-    zipcode = models.CharField(max_length=200, null=True)
-    color = models.CharField(max_length = 15, null=True)
-    buyer_closing_location = models.CharField(max_length=200, null=True)
-    seller_delivery_property = models.DateTimeField(auto_now=False, auto_now_add=False, null=True)
-    seller_order_provide_purchase_title_deadline = models.DateTimeField(auto_now=False, auto_now_add=False, null=True)
-
-    def __str__(self):
-            return str(self.contract_view)
-
-# class ClientEmail(models.Model):
-#     contract_num = models.ForeignKey(Contract, to_field='contract')
-#     email = models.EmailField(null=True)
-
-#
-# class CalenderEvents(models.Model):

@@ -18,7 +18,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 
 from .forms import UserInfoForm, UserPreferenceInspector, UserPreferenceLender, UserPreferenceClosing
-from .models import UserInfo, UserPreference, Contract
+from .models import UserInfo, UserPreference, Fund
 
 import datetime
 import json
@@ -26,20 +26,51 @@ import random
 
 # Create your views here.
 
-# def home(request):
-# 	return render(request, "landing_page.html", {"html_var": True})
+dict_funds = {
+'REIT': '0',
+'BioTech': '1',
+'Tech': '2',
+'Crypto': '3'
+}
 
-class ContractCreation(APIView):
-	def post(self, request, *args, **kwargs):
-		data = {}
-		return Response(data, status=status.HTTP_200_OK)
 
-class test(View):
+class ChartData(APIView):
+	authentication_classes = []
+	permission_classes = []
+
+	def get(self, request, *args, **kwargs):
+		labels = ["Net Asset Value", "Cash", "BTC", "ETH", "LTC", "Investments"]
+		fund = self.kwargs['fund']
+		fund_entry = dict_funds[fund]
+		entry = Fund.objects.get(category=fund_entry)
+		value = [float(entry.net_asset_value), float(entry.cash_amount), float(entry.BTC_amount), float(entry.ETH_amount), float(entry.LTC_amount), float(entry.investment_value)]
+		data = {"labels": labels, "fund_data": value}
+
+		return JsonResponse(data, safe=False)
+
+#Django Base-View
+class ViewFund(View):
+	def get(self, request, *args, **kwargs):
+		fund = self.kwargs['fund']
+		#get the fund info passed from the url
+		return render(request, "viewfund.html", {"html_var": True, "fund":fund})
+
+class ViewAccount(View):
+	def get(self, request, *args, **kwargs):
+		username = request.user
+		entry = UserInfo.objects.get(user_id=username)
+		form = UserInfoForm(instance=entry)
+		#display model form
+		return render(request, "account.html", {"html_var": True, "form": form, "username":username})
 	def post(self, request, *args, **kwargs):
-		print("in test view")
-		data = {"nick": "andrew"}
-		#return Response(data, status=status.HTTP_200_OK)
-		return JsonResponse(data)
+		username = request.user
+		entry = UserInfo.objects.get(user_id=username)
+		form = UserInfoForm(request.POST  or None, instance = entry)
+		if form.is_valid():
+			form.save()
+		form = UserInfoForm(instance=entry)
+		success = "You have successfully updated your account info!"
+		return render(request, "account.html", {"html_var": True, "form":form, "username":username, "success":success})
 
 class CalendarView(View):
 	def get(self, request, *args, **kwargs):
@@ -67,21 +98,13 @@ class CalendarView(View):
 
 		return render(request, "calendar.html", {"html_var": True, "events": events, "username":entry.username})
 
-class ContractView(View):
-	def get(self, request, *args, **kwargs):
-		user = request.user.id
-		contracts = Contract.objects.filter(user=user)
-
-		return render(request, "landing_page.html", {"html_var": True})
-
-
 #Django Base-View
 class HomeView(View):
 	def get(self, request, *args, **kwargs):
 		return render(request, "landing_page.html", {"html_var": True})
 
 
-#Django view for the profile page
+#django view for the profile page
 class UserProfile(View):
 	def get(self, request, *args, **kwargs):
 		return render(request, "profile.html", {"html_var": True})
@@ -204,35 +227,7 @@ def profile_view (request):
 
 			return JsonResponse(data, safe=False)
 
-		#for current user, get all the contract objects, and for each date, add to events
-		contracts = Contract.objects.filter(user=user)
-		events = []
-		contract_urls = {}
-		for contract in contracts:
-			value = [contract.contract_num, contract.street, contract.color, contract.file_view]
-			contract_urls[contract.contract_view]= value
-			#contract_urls.append(contract.color)
-			title_var = str(contract.street)
-			contractdate = {
-				'title': "Contract "+ title_var + ": "+ "Contract Date",
-				'start': str(contract.opening_date),
-				'color': contract.color,
-			}
-			events.append(contractdate)
-			closingdate = {
-					'title': "Contract "+ title_var + ": "+ "Closing Date",
-					'start': str(contract.closing_date),
-					'color': contract.color,
-			}
-			events.append(closingdate)
 
-		return render(request, "upload.html", {"html_var": True, "username": entry.username, "events": events, "contract_urls": contract_urls})
-
-class LazyEncoder(DjangoJSONEncoder):
-	def default(self, obj):
-		if isinstance(obj, Contract):
-			return force_text(obj)
-		return super(LazyEncoder, self).default(obj)
-
+		return render(request, "upload.html", {"html_var": True, "username": entry.username})
 
 #Pass returned upload information to django backend and create Contract object
