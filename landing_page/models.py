@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.validators import MinValueValidator
 
 # Create your models here.
 
@@ -44,9 +45,13 @@ class UserInvestment(models.Model):
     ('2', 'LTC')
     )
     currency = models.CharField(max_length =1, choices = currencies)
-    amount = models.DecimalField(max_digits = 10, decimal_places= 3)
+    amount = models.DecimalField(max_digits = 10, decimal_places= 3, validators = [MinValueValidator(0.001)])
     fund_category = models.ForeignKey(Fund, on_delete=models.CASCADE)
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        name = str(self.user.username) + " "+ str(self.fund_category)
+        return name
 
 class FundInvestment(models.Model):
     business_name = models.CharField(max_length = 75)

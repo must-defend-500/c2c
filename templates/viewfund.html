@@ -20,10 +20,51 @@
         </div>
     </nav>
 {% block content %}
+<div class = "fund_page">
+<h2> Fund: <em>{{fund}}</em></h2>
+<h2> NAV: <em>{{net_asset}}</em></h2>
+<div class="card">
+  <div class="card-block">
+    <h3 class="card-title">Invest in {{fund}} Fund</h3>
+    <div class = "wallet_images">
+        <div id="REIT" style = "display: none">
+          <img src="/static/reit.png" >
+          <p>1Q896XxKRBdXL1kummXuApciMHpCKL95G9</p>
+        </div>
 
-<h2> {{fund}}</h2>
+
+        <div id="Tech" style = "display: none">
+          <img src="/static/tech.png" >
+          <p>15wgsZ1LiUz8RBJz1cAH97W7WaFrAG4VAn</p>
+        </div>
+
+        <div id="BioTech" style = "display: none">
+          <img src="/static/biotech.png" >
+          <p>17j7fhKb3nNkNFB4XFqz51skkVgkf589e3</p>
+        </div>
+
+
+        <div id="Crypto" style = "display: none">
+          <img src="/static/crypto.png" >
+          <p>1APNooa2dN42QWtv1CyhNULsccMVe9gyLt</p>
+        </div>
+      </div>
+      <form method="post" action=''>
+        {% csrf_token %}
+        <div>
+        {{ form |crispy }}
+      </div>
+      <input type="submit" value="Submit">
+      </form>
+
+  </div>
+</div>
 
 <canvas id="myChart" width="600" height="400"></canvas>
+
+<canvas id="fundPerformance" width="600" height="400"></canvas>
+
+</div>
 
 </div>
 
@@ -33,23 +74,33 @@
 {% block javascript %}
 <script>
 $(document).ready(function(){
+  // $('#wallet_images').hide();
+  $('#{{fund}}').show();
+
   var ctx = document.getElementById("myChart").getContext('2d');
+  var ctx2 = document.getElementById("fundPerformance").getContext('2d');
   var fundname = '/api/charts/%s'
   var endpoint = fundname.replace('%s', "{{fund}}")
 
-var labels = [];
-var fund_data = [];
+  var labels = [];
+  var fund_data = [];
+  var labels2 = [];
+  var fund_data2 = [];
 
   $.ajax({
       method: 'GET',
       url: endpoint,
       success: function(data){
-        console.log(data);
         labels = data.labels;
         fund_data = data.fund_data;
-        console.log(fund_data);
+        labels2 = data.labels2;
+        fund_data2 = data.fund_data2;
         console.log(labels);
-        viewChart(data)
+        console.log(fund_data);
+        console.log(labels2);
+        console.log(fund_data2);
+        viewChart(labels, fund_data, ctx, 'bar')
+        viewChart(labels2, fund_data2, ctx2, 'line')
       },
       error: function(error_data){
 
@@ -57,15 +108,15 @@ var fund_data = [];
 
   })
 
-function viewChart(response_data){
-  var myChart = new Chart(ctx, {
+function viewChart(Labels, FundData, Context, Type){
+  var myChart = new Chart(Context, {
     responsive: true,
-    type: 'bar',
+    type: Type,
     data: {
-        labels: labels,
+        labels: Labels,
         datasets: [{
             label: 'Balance',
-            data: fund_data,
+            data: FundData,
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
                 'rgba(54, 162, 235, 0.2)',
@@ -96,8 +147,6 @@ function viewChart(response_data){
       }
   });
 }
-
-
 
     $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('active');

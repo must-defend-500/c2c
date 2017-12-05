@@ -17,8 +17,8 @@ from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 
-from .forms import UserInfoForm, UserPreferenceInspector, UserPreferenceLender, UserPreferenceClosing
-from .models import UserInfo, UserPreference, Fund
+from .forms import UserInfoForm, UserPreferenceInspector, UserPreferenceLender, UserPreferenceClosing, SendUserPayment
+from .models import UserInfo, UserPreference, Fund, UserInvestment
 
 import datetime
 import json
@@ -39,12 +39,17 @@ class ChartData(APIView):
 	permission_classes = []
 
 	def get(self, request, *args, **kwargs):
-		labels = ["Net Asset Value", "Cash", "BTC", "ETH", "LTC", "Investments"]
 		fund = self.kwargs['fund']
 		fund_entry = dict_funds[fund]
 		entry = Fund.objects.get(category=fund_entry)
-		value = [float(entry.net_asset_value), float(entry.cash_amount), float(entry.BTC_amount), float(entry.ETH_amount), float(entry.LTC_amount), float(entry.investment_value)]
-		data = {"labels": labels, "fund_data": value}
+
+		labels = ["USD", "BTC", "ETH", "LTC", "Investments"]
+		value = [float(entry.cash_amount), float(entry.BTC_amount), float(entry.ETH_amount), float(entry.LTC_amount), float(entry.investment_value)]
+
+		labels2 = ["Hey"]
+		value2 = [50]
+
+		data = {"labels": labels, "fund_data": value, "labels2": labels2, "fund_data2": value2}
 
 		return JsonResponse(data, safe=False)
 
@@ -52,8 +57,36 @@ class ChartData(APIView):
 class ViewFund(View):
 	def get(self, request, *args, **kwargs):
 		fund = self.kwargs['fund']
+		form = SendUserPayment()
+		fund_entry = dict_funds[fund]
+		entry = Fund.objects.get(category=fund_entry)
+		net_asset = entry.net_asset_value
 		#get the fund info passed from the url
-		return render(request, "viewfund.html", {"html_var": True, "fund":fund})
+		return render(request, "viewfund.html", {"html_var": True, "fund":fund, "form":form, "net_asset":net_asset})
+	def post(self, request, *args, **kwargs):
+		fund = self.kwargs['fund']
+		fund_entry = dict_funds[fund]
+		entry = Fund.objects.get(category=fund_entry)
+		username = request.user
+		form = SendUserPayment(request.POST or None)
+		print(entry)
+		if form.is_valid():
+			amount_invested = form.cleaned_data.get('amount')
+			UserInvestment.objects.create(
+					user = username,
+					currency = '0',
+					fund_category = entry,
+					amount = amount_invested
+			)
+
+			# entry.save(update_field=['BTC_amount'+amount_invested])
+			entry.BTC_amount += amount_invested
+			entry.net_asset_value += 11800*amount_invested
+			entry.save()
+
+		form = SendUserPayment()
+		net_asset = entry.net_asset_value
+		return render(request, "viewfund.html", {"html_var": True, "fund":fund, "form":form,"net_asset":net_asset})
 
 class ViewAccount(View):
 	def get(self, request, *args, **kwargs):

@@ -5,11 +5,18 @@ from .models import UserInfo, UserPreference, UserInvestment, FundInvestment, Fu
 class UserInfoForm(forms.ModelForm):
     class Meta:
         model = UserInfo
-        fields =[
+        fields = [
             'user_email',
             'first_name',
             'last_name',
             'wallet'
+        ]
+
+class SendUserPayment(forms.ModelForm):
+    class Meta:
+        model  = UserInvestment
+        fields = [
+            'amount',
         ]
 
 
