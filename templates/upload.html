@@ -41,7 +41,7 @@
       </div>
   </nav>
 
-  <p style = "padding: 20px"> hey </p>
+  <h2 style = "padding: 20px"> Fund Page </h2>
 
     {% block content %}
 
@@ -60,7 +60,8 @@
     <div class="card">
       <div class="card-block">
         <h3 class="card-title">BioTech</h3>
-        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+        <!-- <p class="card-text">With supporting text below as a natural lead-in to additional content.</p> -->
+        <canvas id="BioTechChart" width="200" height="200"></canvas>
         <a href="funds/BioTech" class="btn btn-primary">Invest </a>
       </div>
     </div>
@@ -102,6 +103,69 @@ $(document).ready(function(){
         $('#sidebar').toggleClass('active');
     });
 
+  var ctx = document.getElementById("BioTechChart").getContext('2d');
+
+  var fundname = '/api/charts/%s'
+  var endpoint = fundname.replace('%s', "{{fund}}")
+
+  $.ajax({
+      method: 'GET',
+      url: endpoint,
+      success: function(data){
+        labels = data.labels;
+        fund_data = data.fund_data;
+        console.log(fund_data);
+        // labels2 = data.labels2;
+        // fund_data2 = data.fund_data2;
+
+        viewChart(labels, fund_data, ctx, 'line', 'Performance')
+        // viewChart(labels2, fund_data2, ctx2, 'line', 'Performance')
+      },
+      error: function(error_data){
+
+      }
+
+  })
+
+function viewChart(Labels, FundData, Context, Type, Label){
+  var myChart = new Chart(Context, {
+    responsive: true,
+    type: Type,
+    data: {
+        labels: Labels,
+        datasets: [{
+            label: Label,
+            data: FundData,
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+          }
+      }
+  });
+}
 
 // for (var key in contracts_for_sidebar) {
 //   var counter = 1;

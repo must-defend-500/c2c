@@ -95,12 +95,9 @@ $(document).ready(function(){
         fund_data = data.fund_data;
         labels2 = data.labels2;
         fund_data2 = data.fund_data2;
-        console.log(labels);
-        console.log(fund_data);
-        console.log(labels2);
-        console.log(fund_data2);
-        viewChart(labels, fund_data, ctx, 'bar')
-        viewChart(labels2, fund_data2, ctx2, 'line')
+
+        viewChart(labels, fund_data, ctx, 'bar', 'Balance')
+        viewChart(labels2, fund_data2, ctx2, 'line', 'Performance')
       },
       error: function(error_data){
 
@@ -108,14 +105,14 @@ $(document).ready(function(){
 
   })
 
-function viewChart(Labels, FundData, Context, Type){
+function viewChart(Labels, FundData, Context, Type, Label){
   var myChart = new Chart(Context, {
     responsive: true,
     type: Type,
     data: {
         labels: Labels,
         datasets: [{
-            label: 'Balance',
+            label: Label,
             data: FundData,
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',

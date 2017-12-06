@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.validators import MinValueValidator
+from django.db.models import signals
+from django.db.models.signals import post_save
 
 # Create your models here.
 
@@ -62,12 +64,28 @@ class FundInvestment(models.Model):
     def __str__(self):
         return self.business_name
 
+def create_investment(sender, **kwargs):
+    if kwargs['created']:
+        print(kwargs['instance'])
+        investment = kwargs['instance']
+        fund_init = investment.fund_category
+        fund = Fund.objects.get(category=fund_init)
+
+        fund.cash_amount -= investment.amount_invested
+        fund.investment_value += investment.amount_invested
+
+        fund.save()
+        #create user profile/ make changes to database
+
+post_save.connect(create_investment, sender=FundInvestment)
+
 class FundDividend(models.Model):
-    dividend_date = models.DateTimeField()
+    dividend_date = models.DateField()
     currencies = (
     ('0', 'BTC'),
     ('1', 'ETH'),
-    ('2', 'LTC')
+    ('2', 'LTC'),
+    ('3', 'USD')
     )
     currency = models.CharField(max_length =1, choices = currencies)
     dividend_amount = models.DecimalField(max_digits = 12, decimal_places= 3)

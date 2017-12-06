@@ -17,8 +17,8 @@ from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 
-from .forms import UserInfoForm, UserPreferenceInspector, UserPreferenceLender, UserPreferenceClosing, SendUserPayment
-from .models import UserInfo, UserPreference, Fund, UserInvestment
+from .forms import UserInfoForm, SendUserPayment, FirstInfoForm
+from .models import UserInfo, UserPreference, Fund, UserInvestment, FundDividend
 
 import datetime
 import json
@@ -33,7 +33,6 @@ dict_funds = {
 'Crypto': '3'
 }
 
-
 class ChartData(APIView):
 	authentication_classes = []
 	permission_classes = []
@@ -46,12 +45,24 @@ class ChartData(APIView):
 		labels = ["USD", "BTC", "ETH", "LTC", "Investments"]
 		value = [float(entry.cash_amount), float(entry.BTC_amount), float(entry.ETH_amount), float(entry.LTC_amount), float(entry.investment_value)]
 
-		labels2 = ["Hey"]
-		value2 = [50]
+		labels2 = []
+		value2 = []
+
+		dividend_entries = FundDividend.objects.filter(payee=entry).order_by('dividend_date')
+
+		for dividend in dividend_entries:
+			print(dividend.dividend_amount)
+			value2.append(dividend.dividend_amount)
+			labels2.append(str(dividend.dividend_date))
 
 		data = {"labels": labels, "fund_data": value, "labels2": labels2, "fund_data2": value2}
 
 		return JsonResponse(data, safe=False)
+
+class MainPageData(APIView):
+
+	data = {}
+	return JsonResponse(data, safe=False)
 
 #Django Base-View
 class ViewFund(View):
@@ -150,117 +161,29 @@ def profile_view (request):
 	#grab the UserInfo object in order to match UserPreference
 
 	#User checking: if they don't exist
-	if not UserInfo.objects.filter(user = user).exists() or not UserPreference.objects.filter(user=user).exists():
+	if not UserInfo.objects.filter(user = user).exists():
 		#if first name and last name are not set
 		if (request.method == "GET" and not UserInfo.objects.filter(user = user).exists()):
-			form = UserInfoForm()
+			form = FirstInfoForm()
 			return render(request, "first_login.html", {"form": form, "username": entry.username})
 		#
-		elif(request.method == "GET" and UserInfo.objects.filter(user = user).exists() and not UserPreference.objects.filter(user=user).exists()):
-			form1 = UserPreferenceInspector()
-			form2 = UserPreferenceLender()
-			form3 = UserPreferenceClosing()
-			return render(request, "user_preferences.html", {"html_var": True, "form1":form1, "form2":form2, "form3":form3, "username":entry.username})
-		#
 		elif (request.method == "POST" and not UserInfo.objects.filter(user = user).exists()):
-			form = UserInfoForm(request.POST)
+			form = FirstInfoForm(request.POST)
 			if form.is_valid():
 				#NEED TO UPDATE, not save new entry
 				UserInfo.objects.create(
 					user = entry,
 					user_email = entry.email,
 					last_name = form.cleaned_data.get('last_name'),
-					first_name = form.cleaned_data.get('first_name')
+					first_name = form.cleaned_data.get('first_name'),
+					wallet = form.cleaned_data.get('wallet')
 				)
-				form1 = UserPreferenceInspector()
-				form2 = UserPreferenceLender()
-				form3 = UserPreferenceClosing()
-				return render(request, "user_preferences.html", {"html_var": True, "form1":form1, "form2":form2, "form3":form3, "username":entry.username})
+				return render(request, "upload.html", {"html_var": True, "username": entry.username})
 			else:
 				print("Form is not valid")
 				#print(form.errors)
 				return render(request,  "first_login.html", {"form": form, "username": entry.username})
-		elif (request.method == "POST" and UserInfo.objects.filter(user = user).exists() and not UserPreference.objects.filter(user=user).exists()):
-			form1 = UserPreferenceInspector(request.POST)
-			form2 = UserPreferenceLender(request.POST)
-			form3 = UserPreferenceClosing(request.POST)
-			if form1.is_valid() and form2.is_valid() and form3.is_valid():
-				#create form
-				print("form is valid")
-				UserPreference.objects.create(
-					user = entry,
-					inspector1 = form1.cleaned_data.get('inspector1'),
-					inspector2 = form1.cleaned_data.get('inspector2'),
-					inspector3 = form1.cleaned_data.get('inspector3'),
-
-					lender1 = form2.cleaned_data.get('lender1'),
-					lender2 = form2.cleaned_data.get('lender2'),
-					lender3 = form2.cleaned_data.get('lender3'),
-
-					closingco1 = form3.cleaned_data.get('closingco1'),
-					closingco2 = form3.cleaned_data.get('closingco2'),
-					closingco3 = form3.cleaned_data.get('closingco3'),
-				)
-				events1 = []
-				return render(request, "upload.html", {"html_var": True, "username": entry.username, "events":events1})
-			#if form is not valid
-			else:
-				print("Form is not valid")
-				form1 = UserPreferenceInspector()
-				form2 = UserPreferenceLender()
-				form3 = UserPreferenceClosing()
-				return render(request, "user_preferences.html", {"html_var": True, "form1":form1, "form2":form2, "form3":form3, "username":entry.username})
 
 	#if new contract is created on homepage
 	else:
-		# NEED TO FIGURE OUT CSRF shit
-		if request.method == 'POST':
-			#and request.POST.get('data')
-			print(request.POST.get('data'))
-			event_list = request.POST.get('data')
-			jsonData = json.loads(event_list)
-
-			file1 = jsonData['contract_view_url']
-			#handle converting date of mm/dd/yyyy to datetime
-			json_date1 = jsonData['firstDate']
-			json_date2 = jsonData['closing_date']
-
-			if json_date1.count("/")==2:
-				date1 = (datetime.datetime.strptime(json_date1, '%m/%d/%Y').date())
-			elif json_date1.count("/")==1:
-				date1 = (datetime.datetime.strptime(json_date1, '%m/%d%Y').date())
-
-			if json_date2.count("/")==2:
-				date2 = (datetime.datetime.strptime(json_date2, '%m/%d/%Y').date())
-			elif json_date2.count("/")==1:
-				date2 = (datetime.datetime.strptime(json_date2, '%m/%d%Y').date())
-
-			user_contract = jsonData['user_contract']
-			street_address = jsonData['street']
-
-			#write a contract object
-			#url = contract/164
-
-			r = lambda: random.randint(0,255)
-			color_contract = '#%02X%02X%02X' % (r(),r(),r())
-
-			Contract.objects.create(
-			user = entry,
-			contract_view = user_contract,
-			file_view = file1,
-			opening_date = date1,
-			closing_date = date2,
-			color = color_contract,
-			street = street_address,
-			)
-			contracts = Contract.objects.filter(user=user).values('contract_view', 'street', 'contract_num', 'opening_date', 'closing_date', 'color')
-
-			serialized_q = json.dumps(list(contracts), cls=DjangoJSONEncoder)
-			data = serialized_q
-
-			return JsonResponse(data, safe=False)
-
-
 		return render(request, "upload.html", {"html_var": True, "username": entry.username})
-
-#Pass returned upload information to django backend and create Contract object

@@ -12,6 +12,15 @@ class UserInfoForm(forms.ModelForm):
             'wallet'
         ]
 
+class FirstInfoForm(forms.ModelForm):
+    class Meta:
+        model = UserInfo
+        fields = [
+            'first_name',
+            'last_name',
+            'wallet'
+        ]
+
 class SendUserPayment(forms.ModelForm):
     class Meta:
         model  = UserInvestment

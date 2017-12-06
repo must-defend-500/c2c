@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-
 {% block content %}
 
+  <div style= "padding: 25px">
     <h2> {{username}} Account Info </h2>
     {{form.errors}}
     {{ form.non_field_errors }}
@@ -19,5 +19,6 @@
     </form>
   </div>
 </div>
+</div> 
 
 {% endblock content %}
